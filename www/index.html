@@ -170,7 +170,32 @@
                             <h2>Scanner e validacao</h2>
                         </div>
                     </div>
-                    <p class="hero-text">Aqui sera conectado o leitor de QR Code com os botoes de confirmar presenca e saida.</p>
+                    <p class="hero-text">Leia o QR Code do convite para validar o hash do convidado no banco local da portaria.</p>
+
+                    <div class="checkin-actions">
+                        <button id="scan-qr-button" class="action-button action-button-primary" type="button">Ler QR Code</button>
+                    </div>
+
+                    <p id="scan-feedback" class="inline-feedback" aria-live="polite">Scanner pronto para leitura.</p>
+
+                    <article id="scan-result-card" class="scan-result-card" aria-hidden="true">
+                        <p class="panel-kicker">Resultado da validacao</p>
+                        <h3 id="scan-result-title">Convidado encontrado</h3>
+                        <dl class="scan-result-list">
+                            <div>
+                                <dt>Nome</dt>
+                                <dd id="scan-guest-name">-</dd>
+                            </div>
+                            <div>
+                                <dt>Status</dt>
+                                <dd id="scan-guest-status">-</dd>
+                            </div>
+                            <div>
+                                <dt>Hash</dt>
+                                <dd id="scan-guest-hash">-</dd>
+                            </div>
+                        </dl>
+                    </article>
                 </section>
             </section>
         </main>

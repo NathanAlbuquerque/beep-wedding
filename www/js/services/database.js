@@ -201,6 +201,33 @@
 
             return [];
         },
+        async findGuestByHash(hashValue) {
+            const hash = String(hashValue || '').trim();
+            if (!hash) {
+                return null;
+            }
+
+            if (this.mode === 'sqlite') {
+                const row = await this.getFirstRow(
+                    `
+                        SELECT id, nome, hash, status, data_checkin
+                        FROM ${TABLE_NAME}
+                        WHERE hash = ?
+                        LIMIT 1
+                    `,
+                    [hash]
+                );
+
+                return row && row.hash ? row : null;
+            }
+
+            if (this.mode === 'browser-storage') {
+                const state = this.readFallbackState();
+                return state.convidados.find((guest) => String(guest.hash) === hash) || null;
+            }
+
+            return null;
+        },
         async ensureSchema() {
             await this.executeSql(CREATE_CONVIDADOS_TABLE_SQL);
             await this.executeSql(CREATE_HASH_INDEX_SQL);

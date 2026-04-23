@@ -430,6 +430,56 @@ button {
     text-align: center;
 }
 
+.checkin-actions {
+    margin-top: 14px;
+    margin-bottom: 8px;
+}
+
+.scan-result-card {
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(58, 34, 20, 0.14);
+    background: rgba(255, 255, 255, 0.78);
+}
+
+.scan-result-card.is-success {
+    border-color: rgba(20, 120, 72, 0.35);
+    background: rgba(222, 248, 237, 0.9);
+}
+
+.scan-result-card.is-error {
+    border-color: rgba(158, 67, 30, 0.35);
+    background: rgba(255, 234, 224, 0.92);
+}
+
+.scan-result-card h3 {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+}
+
+.scan-result-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.scan-result-list div {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 10px;
+}
+
+.scan-result-list dt {
+    font-weight: 700;
+    color: var(--accent-strong);
+}
+
+.scan-result-list dd {
+    margin: 0;
+    word-break: break-all;
+}
+
 .checklist {
     list-style: none;
     padding: 0;

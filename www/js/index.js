@@ -34,6 +34,7 @@ async function initializeBaseState() {
 
     setupNavigation();
     setupGuestManagement();
+    setupCheckinScanner();
     renderSetupChecklist();
     await refreshSummary();
     await refreshGuestList();
@@ -148,6 +149,122 @@ function setupGuestManagement() {
             selectGuestForQr(hash);
         });
     }
+}
+
+function setupCheckinScanner() {
+    const scanButton = document.getElementById('scan-qr-button');
+    if (scanButton) {
+        scanButton.addEventListener('click', startQrScan);
+    }
+}
+
+async function startQrScan() {
+    setText('scan-feedback', 'Abrindo camera para leitura...');
+    clearScanResult();
+
+    try {
+        const scannedHash = await scanQrCode();
+        if (!scannedHash) {
+            setText('scan-feedback', 'Leitura cancelada.');
+            return;
+        }
+
+        const guest = await validateGuestByHash(scannedHash);
+
+        if (!guest) {
+            renderScanError(scannedHash);
+            return;
+        }
+
+        renderScanSuccess(guest);
+    } catch (error) {
+        setText('scan-feedback', 'Falha ao ler QR Code. Tente novamente.');
+    }
+}
+
+function scanQrCode() {
+    return new Promise((resolve, reject) => {
+        const barcodeScanner = window.cordova && window.cordova.plugins
+            ? window.cordova.plugins.barcodeScanner
+            : null;
+
+        if (!barcodeScanner || typeof barcodeScanner.scan !== 'function') {
+            const manualHash = window.prompt('Scanner indisponivel no preview. Cole o hash para validar:');
+            resolve(manualHash ? String(manualHash).trim() : '');
+            return;
+        }
+
+        barcodeScanner.scan(
+            (result) => {
+                if (!result || result.cancelled) {
+                    resolve('');
+                    return;
+                }
+
+                resolve(String(result.text || '').trim());
+            },
+            (error) => reject(error),
+            {
+                preferFrontCamera: false,
+                showFlipCameraButton: true,
+                showTorchButton: true,
+                disableAnimations: true,
+                prompt: 'Aponte para o QR Code do convite'
+            }
+        );
+    });
+}
+
+async function validateGuestByHash(hash) {
+    if (!window.BeepWeddingDatabase || typeof window.BeepWeddingDatabase.findGuestByHash !== 'function') {
+        return null;
+    }
+
+    return window.BeepWeddingDatabase.findGuestByHash(hash);
+}
+
+function renderScanSuccess(guest) {
+    const card = document.getElementById('scan-result-card');
+    if (card) {
+        card.setAttribute('aria-hidden', 'false');
+        card.classList.remove('is-error');
+        card.classList.add('is-success');
+    }
+
+    setText('scan-feedback', 'Convidado validado com sucesso.');
+    setText('scan-result-title', 'Convidado encontrado');
+    setText('scan-guest-name', String(guest.nome || '-'));
+    setText('scan-guest-status', String(guest.status || '-'));
+    setText('scan-guest-hash', String(guest.hash || '-'));
+}
+
+function renderScanError(hash) {
+    const card = document.getElementById('scan-result-card');
+    if (card) {
+        card.setAttribute('aria-hidden', 'false');
+        card.classList.remove('is-success');
+        card.classList.add('is-error');
+    }
+
+    setText('scan-feedback', 'Convidado nao encontrado, por favor leia o QR Code novamente.');
+    setText('scan-result-title', 'QR invalido ou nao cadastrado');
+    setText('scan-guest-name', '-');
+    setText('scan-guest-status', '-');
+    setText('scan-guest-hash', String(hash || '-'));
+}
+
+function clearScanResult() {
+    const card = document.getElementById('scan-result-card');
+    if (card) {
+        card.setAttribute('aria-hidden', 'true');
+        card.classList.remove('is-success');
+        card.classList.remove('is-error');
+    }
+
+    setText('scan-result-title', 'Convidado encontrado');
+    setText('scan-guest-name', '-');
+    setText('scan-guest-status', '-');
+    setText('scan-guest-hash', '-');
 }
 
 async function handleGuestSubmit(event) {
