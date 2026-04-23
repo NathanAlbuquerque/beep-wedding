@@ -52,6 +52,48 @@ button {
     padding: 28px 0 36px;
 }
 
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.app-title {
+    margin: 0;
+    font-size: clamp(1.7rem, 4vw, 2.8rem);
+}
+
+.main-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.nav-chip {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--text);
+    font-weight: 700;
+}
+
+.nav-chip.is-active {
+    background: linear-gradient(180deg, #bd5a3e, #a74229);
+    color: #fff7f1;
+    border-color: transparent;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.is-active {
+    display: block;
+}
+
 .hero-card,
 .panel {
     background: var(--surface);
@@ -85,14 +127,14 @@ button {
     font-weight: 700;
 }
 
-.hero-copy h1,
+.hero-copy h2,
 .panel h2 {
     margin: 0;
     line-height: 1.02;
 }
 
-.hero-copy h1 {
-    font-size: clamp(2.5rem, 7vw, 4.8rem);
+.hero-title {
+    font-size: clamp(2.1rem, 5vw, 3.8rem);
     max-width: 8ch;
 }
 
@@ -147,8 +189,20 @@ button {
 .metric-card {
     border-radius: 22px;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(176, 75, 50, 0.12);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.metric-total {
+    background: linear-gradient(145deg, #3f4f7a 0%, #1f2f52 100%);
+}
+
+.metric-present {
+    background: linear-gradient(145deg, #2f9464 0%, #0f5e3a 100%);
+}
+
+.metric-absent {
+    background: linear-gradient(145deg, #d67a2a 0%, #924305 100%);
 }
 
 .metric-card strong {
@@ -278,6 +332,11 @@ button {
 }
 
 @media (max-width: 900px) {
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .hero-card,
     .panel-grid,
     .roadmap {
@@ -302,7 +361,16 @@ button {
         padding: 18px;
     }
 
-    .hero-copy h1 {
-        font-size: 2.25rem;
+    .hero-title {
+        font-size: 2.1rem;
+    }
+
+    .main-nav {
+        width: 100%;
+    }
+
+    .nav-chip {
+        width: 100%;
+        text-align: center;
     }
 }

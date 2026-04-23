@@ -1,82 +1,95 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: blob: content:; connect-src 'self' data: blob:;">
-        <meta name="format-detection" content="telephone=no">
-        <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
-        <meta name="color-scheme" content="light dark">
-        <link rel="stylesheet" href="css/index.css">
-        <title>Beep Wedding</title>
-    </head>
-    <body>
-        <main class="app-shell">
-            <section class="hero-card">
-                <div class="hero-copy">
+            <header class="topbar panel">
+                <div>
                     <p class="eyebrow">Controle de acesso do evento</p>
-                    <h1>Beep Wedding</h1>
-                    <p class="hero-text">Base Cordova para cadastro de convidados, validação por QR Code e operação offline na portaria.</p>
-                    <div class="status-row">
-                        <span id="app-status" class="status-pill">Inicializando base local...</span>
-                        <span class="status-note">RNF01 e RNF03 preparados</span>
-                    </div>
+                    <h1 class="app-title">Beep Wedding</h1>
                 </div>
-                <div class="hero-metrics" id="summary-metrics">
-                    <article class="metric-card">
-                        <span class="metric-label">Total</span>
-                        <strong id="metric-total">0</strong>
-                    </article>
-                    <article class="metric-card">
-                        <span class="metric-label">Presentes</span>
-                        <strong id="metric-present">0</strong>
-                    </article>
-                    <article class="metric-card">
-                        <span class="metric-label">Ausentes</span>
-                        <strong id="metric-absent">0</strong>
-                    </article>
-                </div>
-            </section>
+                <nav class="main-nav" aria-label="Navegacao principal">
+                    <button class="nav-chip is-active" type="button" data-nav-target="dashboard">Dashboard</button>
+                    <button class="nav-chip" type="button" data-nav-target="convidados">Convidados</button>
+                    <button class="nav-chip" type="button" data-nav-target="checkin">Check-in</button>
+                </nav>
+            </header>
 
-            <section class="panel-grid">
-                <article class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <p class="panel-kicker">Fluxo base</p>
-                            <h2>Atalhos do app</h2>
+            <section class="screen is-active" data-screen="dashboard">
+                <section class="hero-card">
+                    <div class="hero-copy">
+                        <p class="eyebrow">Visao geral em tempo real</p>
+                        <h2 class="hero-title">Dashboard do evento</h2>
+                        <p class="hero-text">Metrica de convidados atualizada automaticamente para apoiar decisoes rapidas na portaria.</p>
+                        <div class="status-row">
+                            <span id="app-status" class="status-pill">Inicializando base local...</span>
+                            <span id="last-sync" class="status-note">Aguardando primeira leitura</span>
                         </div>
                     </div>
-                    <div class="action-grid">
-                        <button class="action-button" type="button">Cadastrar convidado</button>
-                        <button class="action-button" type="button">Importar planilha</button>
-                        <button class="action-button" type="button">Gerar QR Code</button>
-                        <button class="action-button" type="button">Abrir check-in</button>
+                    <div class="hero-metrics" id="summary-metrics">
+                        <article class="metric-card metric-total">
+                            <span class="metric-label">Total</span>
+                            <strong id="metric-total">0</strong>
+                        </article>
+                        <article class="metric-card metric-present">
+                            <span class="metric-label">Presentes</span>
+                            <strong id="metric-present">0</strong>
+                        </article>
+                        <article class="metric-card metric-absent">
+                            <span class="metric-label">Ausentes</span>
+                            <strong id="metric-absent">0</strong>
+                        </article>
                     </div>
-                </article>
+                </section>
 
-                <article class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <p class="panel-kicker">Base offline</p>
-                            <h2>Preparação da infraestrutura</h2>
+                <section class="panel-grid">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="panel-kicker">Fluxo base</p>
+                                <h2>Atalhos do app</h2>
+                            </div>
                         </div>
-                    </div>
-                    <ul id="setup-checklist" class="checklist"></ul>
-                </article>
+                        <div class="action-grid">
+                            <button class="action-button" type="button" data-nav-target="convidados">Cadastrar convidado</button>
+                            <button class="action-button" type="button" data-nav-target="convidados">Importar planilha</button>
+                            <button class="action-button" type="button" data-nav-target="convidados">Gerar QR Code</button>
+                            <button class="action-button" type="button" data-nav-target="checkin">Abrir check-in</button>
+                        </div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="panel-kicker">Base offline</p>
+                                <h2>Preparacao da infraestrutura</h2>
+                            </div>
+                        </div>
+                        <ul id="setup-checklist" class="checklist"></ul>
+                    </article>
+                </section>
             </section>
 
-            <section class="panel roadmap-panel">
-                <div class="panel-heading">
-                    <div>
-                        <p class="panel-kicker">Próximas telas</p>
-                        <h2>Estrutura inicial</h2>
+            <section class="screen" data-screen="convidados" aria-hidden="true">
+                <section class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-kicker">Tela de convidados</p>
+                            <h2>Cadastro e listagem</h2>
+                        </div>
                     </div>
-                </div>
-                <div class="roadmap">
-                    <div class="roadmap-item">
-                        <span>01</span>
-                        <strong>Dashboard em tempo real</strong>
-                        <p>Indicadores de total, presentes e ausentes com dados vindos do armazenamento local.</p>
+                    <p class="hero-text">Essa area recebera na proxima etapa o formulario de cadastro individual, importacao em lote e busca por nome.</p>
+                </section>
+            </section>
+
+            <section class="screen" data-screen="checkin" aria-hidden="true">
+                <section class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-kicker">Tela de portaria</p>
+                            <h2>Scanner e validacao</h2>
+                        </div>
+                    </div>
+                    <p class="hero-text">Aqui sera conectado o leitor de QR Code com os botoes de confirmar presenca e saida.</p>
+                </section>
+            </section>
                     </div>
                     <div class="roadmap-item">
                         <span>02</span>
