@@ -1,50 +1,100 @@
 <!DOCTYPE html>
-<!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
-<html>
+<html lang="pt-BR">
     <head>
         <meta charset="utf-8">
-        <!--
-        Customize this policy to fit your own app's needs. For more guidance, please refer to the docs:
-            https://cordova.apache.org/docs/en/latest/
-        Some notes:
-            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
-            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
-                * Enable inline JS: add 'unsafe-inline' to default-src
-        -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: blob: content:; connect-src 'self' data: blob:;">
         <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
         <meta name="color-scheme" content="light dark">
         <link rel="stylesheet" href="css/index.css">
-        <title>Hello World</title>
+        <title>Beep Wedding</title>
     </head>
     <body>
-        <div class="app">
-            <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
-        </div>
+        <main class="app-shell">
+            <section class="hero-card">
+                <div class="hero-copy">
+                    <p class="eyebrow">Controle de acesso do evento</p>
+                    <h1>Beep Wedding</h1>
+                    <p class="hero-text">Base Cordova para cadastro de convidados, validação por QR Code e operação offline na portaria.</p>
+                    <div class="status-row">
+                        <span id="app-status" class="status-pill">Inicializando base local...</span>
+                        <span class="status-note">RNF01 e RNF03 preparados</span>
+                    </div>
+                </div>
+                <div class="hero-metrics" id="summary-metrics">
+                    <article class="metric-card">
+                        <span class="metric-label">Total</span>
+                        <strong id="metric-total">0</strong>
+                    </article>
+                    <article class="metric-card">
+                        <span class="metric-label">Presentes</span>
+                        <strong id="metric-present">0</strong>
+                    </article>
+                    <article class="metric-card">
+                        <span class="metric-label">Ausentes</span>
+                        <strong id="metric-absent">0</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel-grid">
+                <article class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-kicker">Fluxo base</p>
+                            <h2>Atalhos do app</h2>
+                        </div>
+                    </div>
+                    <div class="action-grid">
+                        <button class="action-button" type="button">Cadastrar convidado</button>
+                        <button class="action-button" type="button">Importar planilha</button>
+                        <button class="action-button" type="button">Gerar QR Code</button>
+                        <button class="action-button" type="button">Abrir check-in</button>
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-kicker">Base offline</p>
+                            <h2>Preparação da infraestrutura</h2>
+                        </div>
+                    </div>
+                    <ul id="setup-checklist" class="checklist"></ul>
+                </article>
+            </section>
+
+            <section class="panel roadmap-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="panel-kicker">Próximas telas</p>
+                        <h2>Estrutura inicial</h2>
+                    </div>
+                </div>
+                <div class="roadmap">
+                    <div class="roadmap-item">
+                        <span>01</span>
+                        <strong>Dashboard em tempo real</strong>
+                        <p>Indicadores de total, presentes e ausentes com dados vindos do armazenamento local.</p>
+                    </div>
+                    <div class="roadmap-item">
+                        <span>02</span>
+                        <strong>Cadastro e importação</strong>
+                        <p>Formulário individual e leitura de planilhas para gerar hashes e persistir registros.</p>
+                    </div>
+                    <div class="roadmap-item">
+                        <span>03</span>
+                        <strong>Check-in por QR Code</strong>
+                        <p>Leitura pela câmera e ações rápidas de confirmação de presença ou saída.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
         <script src="cordova.js"></script>
+        <script src="js/services/database.js"></script>
+        <script src="js/services/permissions.js"></script>
         <script src="js/index.js"></script>
     </body>
 </html>

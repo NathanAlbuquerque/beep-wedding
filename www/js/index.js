@@ -1,29 +1,75 @@
-/**
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
+document.addEventListener('deviceready', bootApp, false);
+document.addEventListener('DOMContentLoaded', handleBrowserPreview, false);
 
-        http://www.apache.org/licenses/LICENSE-2.0
+let booted = false;
 
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
-*/
+async function bootApp() {
+    if (booted) {
+        return;
+    }
 
-// Wait for the deviceready event before using any of Cordova's device APIs.
-// See https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
-document.addEventListener('deviceready', onDeviceReady, false);
+    booted = true;
+    await initializeBaseState();
+}
 
-function onDeviceReady() {
-    // Cordova is now initialized. Have fun!
+async function handleBrowserPreview() {
+    if (window.cordova) {
+        return;
+    }
 
+    await bootApp();
+}
+
+async function initializeBaseState() {
+    setStatus('Preparando armazenamento local...');
+
+    if (window.BeepWeddingDatabase) {
+        await window.BeepWeddingDatabase.initialize();
+    }
+
+    renderSetupChecklist();
+    await refreshSummary();
+
+    const storageMode = window.BeepWeddingDatabase && window.BeepWeddingDatabase.getMode
+        ? window.BeepWeddingDatabase.getMode()
+        : 'local';
+
+    setStatus(`Base pronta para operação offline (${storageMode}).`);
+}
+
+function renderSetupChecklist() {
+    const checklist = document.getElementById('setup-checklist');
+
+    if (!checklist || !window.BeepWeddingPermissions) {
+        return;
+    }
+
+    checklist.innerHTML = window.BeepWeddingPermissions.getSetupChecklist()
+        .map((item) => `<li><div><strong>${item.title}</strong><p>${item.description}</p></div></li>`)
+        .join('');
+}
+
+async function refreshSummary() {
+    const summary = window.BeepWeddingDatabase && window.BeepWeddingDatabase.getSummary
+        ? await window.BeepWeddingDatabase.getSummary()
+        : { total: 0, present: 0, absent: 0 };
+
+    setText('metric-total', summary.total ?? 0);
+    setText('metric-present', summary.present ?? 0);
+    setText('metric-absent', summary.absent ?? 0);
+}
+
+function setStatus(message) {
+    setText('app-status', message);
+}
+
+function setText(elementId, value) {
+    const element = document.getElementById(elementId);
+
+    if (element) {
+        element.textContent = String(value);
+    }
+}
     console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
     document.getElementById('deviceready').classList.add('ready');
 }
