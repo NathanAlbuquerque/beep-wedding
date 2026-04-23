@@ -120,7 +120,10 @@
                             <p class="panel-kicker">Convidados cadastrados</p>
                             <h2>Ultimos registros</h2>
                         </div>
-                        <strong id="guest-list-total" class="list-total">0 itens</strong>
+                        <div class="guest-list-tools">
+                            <input class="field-input field-input-search" id="guest-search" type="search" placeholder="Buscar por nome...">
+                            <strong id="guest-list-total" class="list-total">0 itens</strong>
+                        </div>
                     </div>
                     <div class="table-wrap">
                         <table class="guest-table">
@@ -129,10 +132,32 @@
                                     <th>Nome</th>
                                     <th>Status</th>
                                     <th>Hash</th>
+                                    <th>QR</th>
                                 </tr>
                             </thead>
                             <tbody id="guest-list-body"></tbody>
                         </table>
+                    </div>
+                </section>
+
+                <section class="panel qr-panel" id="qr-panel" aria-hidden="true">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-kicker">RF04 - QR Code</p>
+                            <h2 id="qr-guest-name">Selecione um convidado</h2>
+                        </div>
+                    </div>
+                    <div class="qr-content">
+                        <div class="qr-stage" id="guest-qr-code"></div>
+                        <div class="qr-meta">
+                            <p class="hero-text">Hash do convidado</p>
+                            <code id="qr-hash" class="qr-hash">-</code>
+                            <div class="qr-actions">
+                                <button id="download-qr-button" class="action-button" type="button" disabled>Baixar QR</button>
+                                <button id="share-qr-button" class="action-button action-button-primary" type="button" disabled>Compartilhar</button>
+                            </div>
+                            <p id="qr-feedback" class="inline-feedback" aria-live="polite"></p>
+                        </div>
                     </div>
                 </section>
             </section>
@@ -154,6 +179,7 @@
         <script src="js/services/database.js"></script>
         <script src="js/services/permissions.js"></script>
         <script src="js/vendor/xlsx.full.min.js"></script>
+        <script src="js/vendor/qrcode.min.js"></script>
         <script src="js/index.js"></script>
     </body>
 </html>

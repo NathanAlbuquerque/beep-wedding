@@ -169,6 +169,38 @@
 
             return [];
         },
+        async searchGuestsByName(searchTerm, limit) {
+            const safeLimit = Number(limit) > 0 ? Number(limit) : 100;
+            const term = String(searchTerm || '').trim().toLowerCase();
+
+            if (!term) {
+                return this.listGuests(safeLimit);
+            }
+
+            if (this.mode === 'sqlite') {
+                const resultSet = await this.executeSql(
+                    `
+                        SELECT id, nome, hash, status, data_checkin
+                        FROM ${TABLE_NAME}
+                        WHERE LOWER(nome) LIKE ?
+                        ORDER BY id DESC
+                        LIMIT ?
+                    `,
+                    [`%${term}%`, safeLimit]
+                );
+
+                return this.rowsToArray(resultSet);
+            }
+
+            if (this.mode === 'browser-storage') {
+                const state = this.readFallbackState();
+                return state.convidados
+                    .filter((guest) => String(guest.nome || '').toLowerCase().includes(term))
+                    .slice(0, safeLimit);
+            }
+
+            return [];
+        },
         async ensureSchema() {
             await this.executeSql(CREATE_CONVIDADOS_TABLE_SQL);
             await this.executeSql(CREATE_HASH_INDEX_SQL);

@@ -301,6 +301,18 @@ button {
     color: var(--accent-strong);
 }
 
+.guest-list-tools {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.field-input-search {
+    min-height: 42px;
+    font-size: 0.92rem;
+}
+
 .table-wrap {
     overflow-x: auto;
 }
@@ -316,6 +328,20 @@ button {
     text-align: left;
     border-bottom: 1px solid rgba(58, 34, 20, 0.1);
     padding: 11px 10px;
+}
+
+.guest-table td:last-child {
+    width: 90px;
+}
+
+.table-action {
+    min-height: 36px;
+    border-radius: 10px;
+    background: rgba(188, 86, 59, 0.14);
+    color: var(--accent-strong);
+    border: 1px solid rgba(188, 86, 59, 0.2);
+    font-weight: 700;
+    width: 100%;
 }
 
 .guest-table th {
@@ -350,6 +376,58 @@ button {
 .status-saiu {
     color: #2f3f66;
     background: rgba(81, 106, 166, 0.2);
+}
+
+.qr-panel {
+    margin-top: 18px;
+}
+
+.qr-content {
+    display: grid;
+    grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+}
+
+.qr-stage {
+    min-height: 210px;
+    border-radius: 18px;
+    border: 1px solid rgba(58, 34, 20, 0.1);
+    background: rgba(255, 255, 255, 0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+}
+
+.qr-stage img,
+.qr-stage canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.qr-hash {
+    display: inline-block;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(58, 34, 20, 0.15);
+    background: rgba(255, 255, 255, 0.86);
+    color: var(--accent-strong);
+    max-width: 100%;
+    word-break: break-all;
+}
+
+.qr-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.qr-actions .action-button {
+    min-height: 44px;
+    text-align: center;
 }
 
 .checklist {
@@ -443,6 +521,11 @@ button {
 
     .hero-metrics,
     .action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .guest-list-tools,
+    .qr-content {
         grid-template-columns: 1fr;
     }
 }

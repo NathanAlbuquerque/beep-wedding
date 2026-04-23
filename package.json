@@ -46,6 +46,7 @@
     }
   },
   "dependencies": {
+    "qrcodejs2": "^0.0.2",
     "xlsx": "^0.18.5"
   }
 }
