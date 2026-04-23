@@ -228,6 +228,44 @@
 
             return null;
         },
+        async updateGuestStatus(hashValue, nextStatus, nextCheckinDate) {
+            const hash = String(hashValue || '').trim();
+            const status = String(nextStatus || '').trim() || 'Ausente';
+            const checkinDate = nextCheckinDate || null;
+
+            if (!hash) {
+                throw new Error('Hash invalido.');
+            }
+
+            if (this.mode === 'sqlite') {
+                await this.executeSql(
+                    `
+                        UPDATE ${TABLE_NAME}
+                        SET status = ?, data_checkin = ?
+                        WHERE hash = ?
+                    `,
+                    [status, checkinDate, hash]
+                );
+
+                return this.findGuestByHash(hash);
+            }
+
+            if (this.mode === 'browser-storage') {
+                const state = this.readFallbackState();
+                const guest = state.convidados.find((item) => String(item.hash) === hash);
+
+                if (!guest) {
+                    return null;
+                }
+
+                guest.status = status;
+                guest.data_checkin = checkinDate;
+                this.writeFallbackState(state);
+                return guest;
+            }
+
+            throw new Error('Banco de dados nao inicializado.');
+        },
         async ensureSchema() {
             await this.executeSql(CREATE_CONVIDADOS_TABLE_SQL);
             await this.executeSql(CREATE_HASH_INDEX_SQL);

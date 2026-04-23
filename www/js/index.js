@@ -153,8 +153,19 @@ function setupGuestManagement() {
 
 function setupCheckinScanner() {
     const scanButton = document.getElementById('scan-qr-button');
+    const confirmPresenceButton = document.getElementById('confirm-presence-button');
+    const guestExitButton = document.getElementById('guest-exit-button');
+
     if (scanButton) {
         scanButton.addEventListener('click', startQrScan);
+    }
+
+    if (confirmPresenceButton) {
+        confirmPresenceButton.addEventListener('click', handleConfirmPresence);
+    }
+
+    if (guestExitButton) {
+        guestExitButton.addEventListener('click', handleGuestExit);
     }
 }
 
@@ -225,10 +236,20 @@ async function validateGuestByHash(hash) {
 
 function renderScanSuccess(guest) {
     const card = document.getElementById('scan-result-card');
+    const confirmPresenceButton = document.getElementById('confirm-presence-button');
+    const guestExitButton = document.getElementById('guest-exit-button');
     if (card) {
         card.setAttribute('aria-hidden', 'false');
         card.classList.remove('is-error');
         card.classList.add('is-success');
+    }
+
+    if (confirmPresenceButton) {
+        confirmPresenceButton.disabled = false;
+    }
+
+    if (guestExitButton) {
+        guestExitButton.disabled = false;
     }
 
     setText('scan-feedback', 'Convidado validado com sucesso.');
@@ -239,11 +260,23 @@ function renderScanSuccess(guest) {
 }
 
 function renderScanError(hash) {
+    selectedGuest = null;
+
     const card = document.getElementById('scan-result-card');
+    const confirmPresenceButton = document.getElementById('confirm-presence-button');
+    const guestExitButton = document.getElementById('guest-exit-button');
     if (card) {
         card.setAttribute('aria-hidden', 'false');
         card.classList.remove('is-success');
         card.classList.add('is-error');
+    }
+
+    if (confirmPresenceButton) {
+        confirmPresenceButton.disabled = true;
+    }
+
+    if (guestExitButton) {
+        guestExitButton.disabled = true;
     }
 
     setText('scan-feedback', 'Convidado nao encontrado, por favor leia o QR Code novamente.');
@@ -254,17 +287,67 @@ function renderScanError(hash) {
 }
 
 function clearScanResult() {
+    selectedGuest = null;
+
     const card = document.getElementById('scan-result-card');
+    const confirmPresenceButton = document.getElementById('confirm-presence-button');
+    const guestExitButton = document.getElementById('guest-exit-button');
     if (card) {
         card.setAttribute('aria-hidden', 'true');
         card.classList.remove('is-success');
         card.classList.remove('is-error');
     }
 
+    if (confirmPresenceButton) {
+        confirmPresenceButton.disabled = true;
+    }
+
+    if (guestExitButton) {
+        guestExitButton.disabled = true;
+    }
+
     setText('scan-result-title', 'Convidado encontrado');
     setText('scan-guest-name', '-');
     setText('scan-guest-status', '-');
     setText('scan-guest-hash', '-');
+}
+
+async function handleConfirmPresence() {
+    await handleAccessAction('Presente', 'Presença confirmada com sucesso.');
+}
+
+async function handleGuestExit() {
+    await handleAccessAction('Saiu', 'Saída registrada com sucesso.');
+}
+
+async function handleAccessAction(nextStatus, successMessage) {
+    if (!selectedGuest) {
+        setText('scan-feedback', 'Leia um QR Code valido antes de executar a acao.');
+        return;
+    }
+
+    try {
+        const updatedGuest = await window.BeepWeddingDatabase.updateGuestStatus(
+            selectedGuest.hash,
+            nextStatus,
+            new Date().toISOString()
+        );
+
+        if (!updatedGuest) {
+            setText('scan-feedback', 'Nao foi possivel atualizar o convidado.');
+            return;
+        }
+
+        selectedGuest = updatedGuest;
+        renderScanSuccess(updatedGuest);
+        setText('scan-guest-status', String(updatedGuest.status || nextStatus));
+        setText('scan-feedback', successMessage);
+
+        await refreshSummary();
+        await refreshGuestList();
+    } catch (error) {
+        setText('scan-feedback', 'Nao foi possivel atualizar o status do convidado.');
+    }
 }
 
 async function handleGuestSubmit(event) {
