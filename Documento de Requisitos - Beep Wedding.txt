@@ -1,0 +1,94 @@
+Documento de Visão e Especificação:
+Beep Wedding
+1. Visão Geral do Produto
+● Nome do Aplicativo: Beep Wedding
+● Plataforma Alvo: Mobile (Android/iOS)
+● Tecnologia Principal: Apache Cordova (HTML5, CSS3, JavaScript)
+● Objetivo: Gerenciar o controle de acesso de convidados em um casamento,
+permitindo o cadastro (manual ou em lote), geração de convites via QR Code e
+validação rápida na portaria do evento através da câmera do dispositivo.
+2. Atores do Sistema
+● Organizador / Recepcionista: Único tipo de usuário do aplicativo. Responsável por
+cadastrar convidados, enviar os QR Codes e operar a portaria no dia do evento.
+3. Requisitos Funcionais (RF)
+Os Requisitos Funcionais descrevem o que o sistema deve fazer.
+● RF01 - Dashboard (Tela Inicial):
+○ O sistema deve exibir um painel principal com as seguintes métricas em
+tempo real:
+■ Total de Convidados (Cadastrados).
+■ Convidados Presentes (Fizeram check-in).
+■ Convidados Ausentes (Ainda não chegaram).
+● RF02 - Cadastro Individual de Convidados:
+○ O sistema deve possuir um formulário para inserir o nome do convidado.
+○ Ao salvar, o sistema deve gerar automaticamente um Hash único (ex: UUID)
+para este convidado.
+○ Os dados (Nome, Hash, Status Inicial = "Ausente") devem ser persistidos no
+banco de dados.
+● RF03 - Importação de Convidados em Lote:
+○ O sistema deve permitir o upload de um arquivo de planilha (ex: .csv ou
+.xlsx).
+○ O sistema deve ler as linhas da planilha, gerar um Hash único para cada
+nome e salvar todos os registros no banco de dados de uma única vez.
+● RF04 - Geração e Compartilhamento de QR Code:
+○ O sistema deve gerar um QR Code visual utilizando o Hash único do
+convidado.
+○ A geração do QR Code deve ser instantânea, ocorrendo no momento da
+visualização.
+○ O sistema deve oferecer as opções: "Fazer Download da Imagem do QR
+Code" e "Compartilhar" (abrindo a gaveta de compartilhamento nativa do
+celular para enviar via WhatsApp, E-mail, etc.).
+● RF05 - Listagem e Busca de Convidados:
+○ O sistema deve exibir uma lista com todos os convidados cadastrados.
+○ O sistema deve possuir uma barra de pesquisa para filtrar convidados pelo
+nome.
+○ Cada item da lista deve ter um botão/opção para abrir os Detalhes do
+convidado (onde será gerado e exibido o seu QR Code).
+● RF06 - Leitura e Validação de QR Code (Scanner):
+○ O sistema deve possuir uma tela de Check-in que aciona a câmera do
+dispositivo do recepcionista.
+○ Ao ler um QR Code, o sistema deve extrair o Hash e buscar no banco de
+dados.
+○ Cenário A (Não Encontrado/Inválido): Exibir mensagem de erro na tela (ex:
+"Convidado não encontrado, por favor leia o QR Code novamente").
+○ Cenário B (Encontrado): Exibir os dados do convidado na tela e habilitar as
+ações de controle de acesso (RF07).
+● RF07 - Controle de Entrada e Saída:
+○ Após a validação bem-sucedida do QR Code (RF06), a tela deve apresentar
+dois botões de ação:
+■ Confirmar Presença: Altera o status do convidado para "Presente" e
+atualiza os números do Dashboard.
+■ Saída: Altera o status do convidado para "Saiu" ou reverte o check-in
+(dependendo da sua regra de negócio para pessoas que saem
+temporariamente).
+4. Requisitos Não Funcionais (RNF)
+Os Requisitos Não Funcionais descrevem como o sistema deve se comportar (qualidade,
+performance, etc.).
+● RNF01 - Funcionamento Offline (Recomendado): Como o sinal de internet em
+locais de casamento (sítios, chácaras) pode ser instável, o banco de dados deve ser
+local (ex: SQLite via plugin do Cordova ou IndexedDB) para garantir que a portaria
+não pare de funcionar sem internet.
+● RNF02 - Desempenho da Câmera: A leitura do QR Code deve ser contínua e
+rápida, retornando o resultado em menos de 1 segundo para evitar filas na entrada.
+● RNF03 - Permissões: O app deve solicitar de forma clara as permissões de acesso
+à Câmera (para leitura do QR Code) e ao Armazenamento (para salvar planilhas e
+imagens geradas).
+5. Estrutura Sugerida do Banco de Dados (Modelo de
+Entidade)
+Uma tabela simples é suficiente para gerenciar este fluxo.
+Campo Tipo Descrição
+id Integer (PK) Identificador único no banco.
+nome String Nome completo do convidado.
+hash String Código único (UUID) usado para o QR Code.
+status Enum Estado atual: Ausente (Padrão), Presente, Saiu.
+data_checkin DateTime Hora exata em que o botão "Confirmar Presença" foi
+clicado.
+6. Plugins do Cordova Recomendados para o Projeto
+Para transformar essa especificação em código com o Cordova, você precisará adicionar
+alguns plugins nativos à sua estrutura:
+● cordova-plugin-camera ou phonegap-plugin-barcodescanner: Para a leitura dos QR
+Codes.
+● cordova-sqlite-storage: Para o banco de dados local robusto.
+● cordova-plugin-file & cordova-plugin-file-transfer: Para ler a planilha CSV.
+● cordova-plugin-x-socialsharing: Para o botão de "Compartilhar" o QR Code gerado.
+● Biblioteca JS Externa: qrcode.js ou equivalente para desenhar o QR Code na tela
+usando o Hash.
