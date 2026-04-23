@@ -212,7 +212,7 @@ function scanQrCode() {
                     return;
                 }
 
-                resolve(String(result.text || '').trim());
+                resolve(normalizeScannedHash(result.text));
             },
             (error) => reject(error),
             {
@@ -220,10 +220,37 @@ function scanQrCode() {
                 showFlipCameraButton: true,
                 showTorchButton: true,
                 disableAnimations: true,
+                resultDisplayDuration: 0,
+                formats: 'QR_CODE',
                 prompt: 'Aponte para o QR Code do convite'
             }
         );
     });
+}
+
+function normalizeScannedHash(value) {
+    const raw = String(value || '').trim();
+    if (!raw) {
+        return '';
+    }
+
+    // Accept plain hashes and common payload wrappers like URL with ?hash=... or /invite/<hash>.
+    try {
+        const parsedUrl = new URL(raw);
+        const queryHash = parsedUrl.searchParams.get('hash');
+        if (queryHash) {
+            return String(queryHash).trim();
+        }
+
+        const pathSegments = parsedUrl.pathname.split('/').filter(Boolean);
+        if (pathSegments.length > 0) {
+            return String(pathSegments[pathSegments.length - 1]).trim();
+        }
+    } catch (_error) {
+        // Not a URL, keep raw payload.
+    }
+
+    return raw;
 }
 
 async function validateGuestByHash(hash) {

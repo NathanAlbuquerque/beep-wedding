@@ -1,0 +1,6 @@
+// Force SDK values for Cordova Android 15+ when plugin scripts do not propagate compileSdk.
+ext {
+    cdvCompileSdkVersion = 36
+    cdvSdkVersion = 36
+    cdvMinSdkVersion = 24
+}
