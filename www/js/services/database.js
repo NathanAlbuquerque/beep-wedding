@@ -75,10 +75,119 @@
 
             return { total: 0, present: 0, absent: 0 };
         },
+        async createGuest(guestData) {
+            const guest = this.normalizeGuestPayload(guestData);
+
+            if (this.mode === 'sqlite') {
+                await this.executeSql(
+                    `
+                        INSERT INTO ${TABLE_NAME} (nome, hash, status, data_checkin)
+                        VALUES (?, ?, ?, ?)
+                    `,
+                    [guest.nome, guest.hash, guest.status, guest.data_checkin]
+                );
+                return guest;
+            }
+
+            if (this.mode === 'browser-storage') {
+                const state = this.readFallbackState();
+                state.convidados.unshift({
+                    id: Date.now(),
+                    nome: guest.nome,
+                    hash: guest.hash,
+                    status: guest.status,
+                    data_checkin: guest.data_checkin
+                });
+                this.writeFallbackState(state);
+                return guest;
+            }
+
+            throw new Error('Banco de dados nao inicializado.');
+        },
+        async bulkInsertGuests(guestList) {
+            const payload = Array.isArray(guestList) ? guestList : [];
+            const guests = payload.map((guest) => this.normalizeGuestPayload(guest));
+
+            if (guests.length === 0) {
+                return { inserted: 0 };
+            }
+
+            if (this.mode === 'sqlite') {
+                await this.executeInTransaction((transaction) => {
+                    guests.forEach((guest) => {
+                        transaction.executeSql(
+                            `
+                                INSERT INTO ${TABLE_NAME} (nome, hash, status, data_checkin)
+                                VALUES (?, ?, ?, ?)
+                            `,
+                            [guest.nome, guest.hash, guest.status, guest.data_checkin]
+                        );
+                    });
+                });
+
+                return { inserted: guests.length };
+            }
+
+            if (this.mode === 'browser-storage') {
+                const state = this.readFallbackState();
+                guests.forEach((guest) => {
+                    state.convidados.unshift({
+                        id: Date.now() + Math.floor(Math.random() * 100000),
+                        nome: guest.nome,
+                        hash: guest.hash,
+                        status: guest.status,
+                        data_checkin: guest.data_checkin
+                    });
+                });
+                this.writeFallbackState(state);
+                return { inserted: guests.length };
+            }
+
+            throw new Error('Banco de dados nao inicializado.');
+        },
+        async listGuests(limit) {
+            const safeLimit = Number(limit) > 0 ? Number(limit) : 30;
+
+            if (this.mode === 'sqlite') {
+                const resultSet = await this.executeSql(
+                    `
+                        SELECT id, nome, hash, status, data_checkin
+                        FROM ${TABLE_NAME}
+                        ORDER BY id DESC
+                        LIMIT ?
+                    `,
+                    [safeLimit]
+                );
+
+                return this.rowsToArray(resultSet);
+            }
+
+            if (this.mode === 'browser-storage') {
+                const state = this.readFallbackState();
+                return state.convidados.slice(0, safeLimit);
+            }
+
+            return [];
+        },
         async ensureSchema() {
             await this.executeSql(CREATE_CONVIDADOS_TABLE_SQL);
             await this.executeSql(CREATE_HASH_INDEX_SQL);
             await this.executeSql(CREATE_STATUS_INDEX_SQL);
+        },
+        executeInTransaction(transactionHandler) {
+            if (this.mode !== 'sqlite' || !this.sqliteDb) {
+                return Promise.reject(new Error('SQLite indisponivel para transacao.'));
+            }
+
+            return new Promise((resolve, reject) => {
+                this.sqliteDb.transaction(
+                    (transaction) => {
+                        transactionHandler(transaction);
+                    },
+                    reject,
+                    resolve
+                );
+            });
         },
         executeSql(sql, params) {
             const queryParams = Array.isArray(params) ? params : [];
@@ -112,10 +221,34 @@
 
             return resultSet.rows.item(0) || {};
         },
+        rowsToArray(resultSet) {
+            if (!resultSet || !resultSet.rows) {
+                return [];
+            }
+
+            const items = [];
+            for (let index = 0; index < resultSet.rows.length; index += 1) {
+                items.push(resultSet.rows.item(index));
+            }
+
+            return items;
+        },
+        normalizeGuestPayload(guestData) {
+            const source = guestData || {};
+            return {
+                nome: String(source.nome || '').trim(),
+                hash: String(source.hash || '').trim(),
+                status: String(source.status || 'Ausente').trim() || 'Ausente',
+                data_checkin: source.data_checkin || null
+            };
+        },
         ensureFallbackState() {
             if (!window.localStorage.getItem(STORAGE_KEY)) {
                 window.localStorage.setItem(STORAGE_KEY, JSON.stringify(FALLBACK_STATE));
             }
+        },
+        writeFallbackState(nextState) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
         },
         readFallbackState() {
             try {

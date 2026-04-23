@@ -1,5 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: blob: content:; connect-src 'self' data: blob:;">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+        <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="css/index.css">
+        <title>Beep Wedding</title>
+    </head>
+    <body>
+        <main class="app-shell">
             <header class="topbar panel">
                 <div>
                     <p class="eyebrow">Controle de acesso do evento</p>
@@ -68,14 +80,60 @@
             </section>
 
             <section class="screen" data-screen="convidados" aria-hidden="true">
-                <section class="panel">
+                <section class="panel-grid convidados-grid">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="panel-kicker">RF02 - Cadastro individual</p>
+                                <h2>Novo convidado</h2>
+                            </div>
+                        </div>
+                        <form id="guest-form" class="stack-form">
+                            <label class="field-label" for="guest-name">Nome do convidado</label>
+                            <input class="field-input" id="guest-name" name="nome" type="text" placeholder="Ex: Maria Oliveira" required>
+
+                            <button class="action-button action-button-primary" type="submit">Salvar convidado</button>
+                        </form>
+                        <p id="guest-feedback" class="inline-feedback" aria-live="polite"></p>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="panel-kicker">RF03 - Importacao em lote</p>
+                                <h2>Arquivo CSV ou XLSX</h2>
+                            </div>
+                        </div>
+                        <div class="stack-form">
+                            <label class="field-label" for="guest-file">Selecione o arquivo</label>
+                            <input class="field-input" id="guest-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
+
+                            <button id="import-button" class="action-button action-button-primary" type="button">Importar convidados</button>
+                        </div>
+                        <p id="import-feedback" class="inline-feedback" aria-live="polite"></p>
+                    </article>
+                </section>
+
+                <section class="panel guest-list-panel">
                     <div class="panel-heading">
                         <div>
-                            <p class="panel-kicker">Tela de convidados</p>
-                            <h2>Cadastro e listagem</h2>
+                            <p class="panel-kicker">Convidados cadastrados</p>
+                            <h2>Ultimos registros</h2>
                         </div>
+                        <strong id="guest-list-total" class="list-total">0 itens</strong>
                     </div>
-                    <p class="hero-text">Essa area recebera na proxima etapa o formulario de cadastro individual, importacao em lote e busca por nome.</p>
+                    <div class="table-wrap">
+                        <table class="guest-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Status</th>
+                                    <th>Hash</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guest-list-body"></tbody>
+                        </table>
+                    </div>
                 </section>
             </section>
 
@@ -90,24 +148,12 @@
                     <p class="hero-text">Aqui sera conectado o leitor de QR Code com os botoes de confirmar presenca e saida.</p>
                 </section>
             </section>
-                    </div>
-                    <div class="roadmap-item">
-                        <span>02</span>
-                        <strong>Cadastro e importação</strong>
-                        <p>Formulário individual e leitura de planilhas para gerar hashes e persistir registros.</p>
-                    </div>
-                    <div class="roadmap-item">
-                        <span>03</span>
-                        <strong>Check-in por QR Code</strong>
-                        <p>Leitura pela câmera e ações rápidas de confirmação de presença ou saída.</p>
-                    </div>
-                </div>
-            </section>
         </main>
 
         <script src="cordova.js"></script>
         <script src="js/services/database.js"></script>
         <script src="js/services/permissions.js"></script>
+        <script src="js/vendor/xlsx.full.min.js"></script>
         <script src="js/index.js"></script>
     </body>
 </html>
