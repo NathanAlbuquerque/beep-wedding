@@ -206,16 +206,17 @@
             if (!hash) {
                 return null;
             }
+            const normalizedHash = hash.toLowerCase();
 
             if (this.mode === 'sqlite') {
                 const row = await this.getFirstRow(
                     `
                         SELECT id, nome, hash, status, data_checkin
                         FROM ${TABLE_NAME}
-                        WHERE hash = ?
+                        WHERE LOWER(hash) = ?
                         LIMIT 1
                     `,
-                    [hash]
+                    [normalizedHash]
                 );
 
                 return row && row.hash ? row : null;
@@ -223,7 +224,7 @@
 
             if (this.mode === 'browser-storage') {
                 const state = this.readFallbackState();
-                return state.convidados.find((guest) => String(guest.hash) === hash) || null;
+                return state.convidados.find((guest) => String(guest.hash || '').trim().toLowerCase() === normalizedHash) || null;
             }
 
             return null;

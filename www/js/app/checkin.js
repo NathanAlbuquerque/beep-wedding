@@ -32,14 +32,18 @@
 
             const guest = await app.validateGuestByHash(scannedHash);
             if (!guest) {
+                app.setText('scan-feedback', 'QR lido, mas o convidado nao foi encontrado na base.');
                 app.renderScanError();
                 return;
             }
 
             app.state.selectedGuest = guest;
             app.renderScanSuccess(guest);
-        } catch (_error) {
-            app.setText('scan-feedback', 'Falha ao ler QR Code. Tente novamente.');
+        } catch (error) {
+            const message = error && error.message
+                ? String(error.message)
+                : 'Falha ao ler QR Code. Tente novamente.';
+            app.setText('scan-feedback', message);
         }
     };
 
@@ -73,14 +77,22 @@
                         rotateCamera: false
                     },
                     (result) => {
-                        if (!result || !result.text) {
+                        const rawValue = app.extractScannedValue(result);
+                        if (!rawValue) {
                             resolve('');
                             return;
                         }
 
-                        resolve(app.normalizeScannedHash(result.text));
+                        resolve(app.normalizeScannedHash(rawValue));
                     },
-                    reject
+                    (error) => {
+                        if (error && error.cancelled) {
+                            resolve('');
+                            return;
+                        }
+
+                        reject(new Error(app.getScannerErrorMessage(error)));
+                    }
                 );
                 return;
             }
@@ -97,9 +109,17 @@
                             return;
                         }
 
-                        resolve(app.normalizeScannedHash(result.text));
+                        const rawValue = app.extractScannedValue(result);
+                        if (!rawValue) {
+                            resolve('');
+                            return;
+                        }
+
+                        resolve(app.normalizeScannedHash(rawValue));
                     },
-                    reject,
+                    (error) => {
+                        reject(new Error(app.getScannerErrorMessage(error)));
+                    },
                     {
                         preferFrontCamera: false,
                         showFlipCameraButton: true,
@@ -113,9 +133,56 @@
                 return;
             }
 
-            const manualHash = windowObject.prompt('Scanner indisponivel no preview. Cole o hash para validar:');
-            resolve(manualHash ? String(manualHash).trim() : '');
+            reject(new Error('Plugin de leitura QR indisponivel neste dispositivo.'));
         });
+    };
+
+    app.extractScannedValue = function extractScannedValue(result) {
+        if (!result) {
+            return '';
+        }
+
+        if (typeof result === 'string') {
+            return result;
+        }
+
+        if (Array.isArray(result)) {
+            return String(result[0] || '').trim();
+        }
+
+        if (result.text) {
+            return String(result.text).trim();
+        }
+
+        if (result.value) {
+            return String(result.value).trim();
+        }
+
+        if (result.rawValue) {
+            return String(result.rawValue).trim();
+        }
+
+        return '';
+    };
+
+    app.getScannerErrorMessage = function getScannerErrorMessage(error) {
+        if (!error) {
+            return 'Falha ao ler QR Code. Tente novamente.';
+        }
+
+        if (typeof error === 'string') {
+            return error;
+        }
+
+        if (error.message) {
+            return String(error.message);
+        }
+
+        if (error.error) {
+            return String(error.error);
+        }
+
+        return 'Falha ao ler QR Code. Tente novamente.';
     };
 
     app.normalizeScannedHash = function normalizeScannedHash(value) {
@@ -124,11 +191,33 @@
             return '';
         }
 
+        if (raw[0] === '{' && raw[raw.length - 1] === '}') {
+            try {
+                const parsed = JSON.parse(raw);
+                const jsonHash = parsed.hash || parsed.codigo || parsed.code || parsed.token;
+                if (jsonHash) {
+                    return String(jsonHash).trim();
+                }
+            } catch (_error) {
+                // Ignore invalid JSON and keep parsing as plain string.
+            }
+        }
+
         try {
             const parsedUrl = new URL(raw);
-            const queryHash = parsedUrl.searchParams.get('hash');
+            const queryHash = parsedUrl.searchParams.get('hash')
+                || parsedUrl.searchParams.get('codigo')
+                || parsedUrl.searchParams.get('code')
+                || parsedUrl.searchParams.get('token');
             if (queryHash) {
                 return String(queryHash).trim();
+            }
+
+            if (parsedUrl.hash) {
+                const fragment = parsedUrl.hash.replace(/^#/, '').trim();
+                if (fragment) {
+                    return fragment;
+                }
             }
 
             const pathSegments = parsedUrl.pathname.split('/').filter(Boolean);
@@ -137,6 +226,11 @@
             }
         } catch (_error) {
             // Not a URL, return original value.
+        }
+
+        const uuidMatch = raw.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
+        if (uuidMatch) {
+            return String(uuidMatch[0]).trim();
         }
 
         return raw;
