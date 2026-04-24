@@ -82,6 +82,11 @@ button {
     background: transparent;
     color: var(--muted);
     font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
 }
 
 .nav-tab.is-active {
@@ -268,6 +273,7 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     width: auto;
 }
 
@@ -276,8 +282,40 @@ button {
     color: #f5fff9;
 }
 
+.action-button-danger {
+    background: linear-gradient(180deg, #ef6a55 0%, #c94f3e 100%);
+    color: #fff7f5;
+}
+
+.button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1rem;
+    height: 1rem;
+}
+
+.button-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .action-grid .action-button {
     min-width: 174px;
+}
+
+.dashboard-status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-top: 16px;
 }
 
 .stack-form {
@@ -379,6 +417,10 @@ button {
     color: var(--accent-strong);
     border: 1px solid rgba(17, 138, 87, 0.24);
     font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     width: 100%;
 }
 
@@ -531,6 +573,11 @@ button {
     flex: 0 1 auto;
     min-width: 164px;
     text-align: center;
+}
+
+.scan-actions #guest-exit-button {
+    border-color: rgba(201, 79, 62, 0.28);
+    box-shadow: 0 10px 24px rgba(201, 79, 62, 0.12);
 }
 
 .qr-modal {

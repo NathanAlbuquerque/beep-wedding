@@ -18,9 +18,24 @@
                     <h1 class="app-title">Beep Wedding</h1>
                 </div>
                 <nav class="main-nav-bar" aria-label="Navegacao principal">
-                    <button class="nav-tab is-active" type="button" data-nav-target="dashboard">Dashboard</button>
-                    <button class="nav-tab" type="button" data-nav-target="convidados">Convidados</button>
-                    <button class="nav-tab" type="button" data-nav-target="checkin">Check-in</button>
+                    <button class="nav-tab is-active" type="button" data-nav-target="dashboard">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5v8.5a1 1 0 0 1-1 1h-4.5v-5.5h-5V21H5a1 1 0 0 1-1-1z"></path></svg>
+                        </span>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="nav-tab" type="button" data-nav-target="convidados">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4zM8 13a4 4 0 1 0-4-4 4 4 0 0 0 4 4zM16 13c-3.2 0-6 1.9-6 4.2V20h12v-2.8C22 14.9 19.2 13 16 13zM8 15c-2.6 0-5 1.5-5 3.5V20h8v-1.5C11 16.5 10.3 15 8 15z"></path></svg>
+                        </span>
+                        <span>Convidados</span>
+                    </button>
+                    <button class="nav-tab" type="button" data-nav-target="checkin">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M9 4h6a2 2 0 0 1 2 2v2h2a1 1 0 0 1 1 1v3h-2.5l-2 3H10l-1.5-3H6V9a1 1 0 0 1 1-1h2V6a2 2 0 0 1 2-2zM7 15h10a2 2 0 0 1 2 2v3H5v-3a2 2 0 0 1 2-2z"></path></svg>
+                        </span>
+                        <span>Check-in</span>
+                    </button>
                 </nav>
             </header>
 
@@ -29,11 +44,6 @@
                     <div class="hero-copy">
                         <p class="eyebrow">Visao geral em tempo real</p>
                         <h2 class="hero-title">Dashboard do evento</h2>
-                        <p class="hero-text">Metrica de convidados atualizada automaticamente para apoiar decisoes rapidas na portaria.</p>
-                        <div class="status-row">
-                            <span id="app-status" class="status-pill">Inicializando base local...</span>
-                            <span id="last-sync" class="status-note">Aguardando primeira leitura</span>
-                        </div>
                     </div>
                     <div class="hero-metrics" id="summary-metrics">
                         <article class="metric-card metric-total">
@@ -51,30 +61,11 @@
                     </div>
                 </section>
 
-                <section class="panel-grid">
-                    <article class="panel">
-                        <div class="panel-heading">
-                            <div>
-                                <h2>Atalhos do app</h2>
-                            </div>
-                        </div>
-                        <div class="action-grid">
-                            <button class="action-button" type="button" data-nav-target="convidados">Cadastrar convidado</button>
-                            <button class="action-button" type="button" data-open-import-modal>Importar planilha</button>
-                            <button class="action-button" type="button" data-nav-target="convidados">Gerar QR Code</button>
-                            <button class="action-button" type="button" data-nav-target="checkin">Abrir check-in</button>
-                        </div>
-                    </article>
+                <div class="dashboard-status-bar">
+                    <span id="app-status" class="status-pill">Inicializando base local...</span>
+                    <span id="last-sync" class="status-note">Aguardando primeira leitura</span>
+                </div>
 
-                    <article class="panel">
-                        <div class="panel-heading">
-                            <div>
-                                <h2>Preparacao da infraestrutura</h2>
-                            </div>
-                        </div>
-                        <ul id="setup-checklist" class="checklist"></ul>
-                    </article>
-                </section>
             </section>
 
             <section class="screen" data-screen="convidados" aria-hidden="true">
@@ -84,13 +75,23 @@
                             <div>
                                 <h2>Novo convidado</h2>
                             </div>
-                            <button class="action-button" type="button" data-open-import-modal>Importar planilha</button>
+                            <button class="action-button" type="button" data-open-import-modal>
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
+                                </span>
+                                <span>Importar planilha</span>
+                            </button>
                         </div>
                         <form id="guest-form" class="stack-form">
                             <label class="field-label" for="guest-name">Nome do convidado</label>
                             <input class="field-input" id="guest-name" name="nome" type="text" placeholder="Ex: Maria Oliveira" required>
 
-                            <button class="action-button action-button-primary" type="submit">Salvar convidado</button>
+                            <button class="action-button action-button-primary" type="submit">
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6zM8 4v5h7V4"></path></svg>
+                                </span>
+                                <span>Salvar convidado</span>
+                            </button>
                         </form>
                         <p id="guest-feedback" class="inline-feedback" aria-live="polite"></p>
                     </article>
@@ -129,16 +130,19 @@
                             <h2>Scanner e validacao</h2>
                         </div>
                     </div>
-                    <p class="hero-text">Leia o QR Code do convite para validar o hash do convidado no banco local da portaria.</p>
 
                     <div class="checkin-actions">
-                        <button id="scan-qr-button" class="action-button action-button-primary" type="button">Ler QR Code</button>
+                        <button id="scan-qr-button" class="action-button action-button-primary" type="button">
+                            <span class="button-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M4 7a3 3 0 0 1 3-3h2v2H7a1 1 0 0 0-1 1v2H4zm13-3h2a3 3 0 0 1 3 3v2h-2V7a1 1 0 0 0-1-1h-2zm2 13h2v2a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1zm-15 0h2v2h2v2H7a3 3 0 0 1-3-3zM9 8h6v6H9zm2 2v2h2v-2z"></path></svg>
+                            </span>
+                            <span>Ler QR Code</span>
+                        </button>
                     </div>
 
                     <p id="scan-feedback" class="inline-feedback" aria-live="polite">Scanner pronto para leitura.</p>
 
                     <article id="scan-result-card" class="scan-result-card" aria-hidden="true">
-                        <p class="panel-kicker">Resultado da validacao</p>
                         <h3 id="scan-result-title">Convidado encontrado</h3>
                         <dl class="scan-result-list">
                             <div>
@@ -151,8 +155,18 @@
                             </div>
                         </dl>
                         <div class="scan-actions">
-                            <button id="confirm-presence-button" class="action-button action-button-primary" type="button" disabled>Confirmar Presença</button>
-                            <button id="guest-exit-button" class="action-button" type="button" disabled>Saída</button>
+                            <button id="confirm-presence-button" class="action-button action-button-primary" type="button" disabled>
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M20 7 10 17l-5-5"></path></svg>
+                                </span>
+                                <span>Confirmar Presença</span>
+                            </button>
+                            <button id="guest-exit-button" class="action-button action-button-danger" type="button" disabled>
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M10 17H5V7h5M14 12H4m8-4 4 4-4 4"></path></svg>
+                                </span>
+                                <span>Saída</span>
+                            </button>
                         </div>
                     </article>
                 </section>
@@ -174,8 +188,18 @@
                     <div class="qr-meta">
                         <p class="hero-text">QR do convite pronto para compartilhar ou baixar.</p>
                         <div class="qr-actions">
-                            <button id="download-qr-button" class="action-button" type="button" disabled>Baixar QR</button>
-                            <button id="share-qr-button" class="action-button action-button-primary" type="button" disabled>Compartilhar</button>
+                            <button id="download-qr-button" class="action-button" type="button" disabled>
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M12 3v10m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+                                </span>
+                                <span>Baixar QR</span>
+                            </button>
+                            <button id="share-qr-button" class="action-button action-button-primary" type="button" disabled>
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M14 7a3 3 0 1 0-.7-1.9M6 13a3 3 0 1 0 0-2m8 6a3 3 0 1 0 .7 1.9M8.7 11.5l6.6-3.2M8.7 12.5l6.6 3.2"></path></svg>
+                                </span>
+                                <span>Compartilhar</span>
+                            </button>
                         </div>
                         <p id="qr-feedback" class="inline-feedback" aria-live="polite"></p>
                     </div>
@@ -196,7 +220,12 @@
                 <div class="stack-form">
                     <label class="field-label" for="guest-file">Selecione o arquivo CSV ou XLSX</label>
                     <input class="field-input" id="guest-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
-                    <button id="import-button" class="action-button action-button-primary" type="button">Importar convidados</button>
+                    <button id="import-button" class="action-button action-button-primary" type="button">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
+                        </span>
+                        <span>Importar convidados</span>
+                    </button>
                 </div>
                 <p id="import-feedback" class="inline-feedback" aria-live="polite"></p>
             </section>

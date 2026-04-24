@@ -322,7 +322,7 @@
                     <tr>
                         <td>${app.escapeHtml(guest.nome || '')}</td>
                         <td><span class="status-badge ${app.mapStatusClass(status)}">${app.escapeHtml(status)}</span></td>
-                        <td class="guest-table-action-cell"><button class="table-action" type="button" data-qr-hash="${app.escapeHtml(guest.hash || '')}">Abrir QR</button></td>
+                        <td class="guest-table-action-cell"><button class="table-action" type="button" data-qr-hash="${app.escapeHtml(guest.hash || '')}"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM16 16h2v2h-2zM16 20h2v2h-2zM20 16h2v2h-2zM20 20h2v2h-2z"></path></svg></span><span>Abrir QR</span></button></td>
                     </tr>
                 `;
             })
