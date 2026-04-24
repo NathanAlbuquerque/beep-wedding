@@ -283,7 +283,6 @@ function renderScanSuccess(guest) {
     setText('scan-result-title', 'Convidado encontrado');
     setText('scan-guest-name', String(guest.nome || '-'));
     setText('scan-guest-status', String(guest.status || '-'));
-    setText('scan-guest-hash', String(guest.hash || '-'));
 }
 
 function renderScanError(hash) {
@@ -310,7 +309,6 @@ function renderScanError(hash) {
     setText('scan-result-title', 'QR invalido ou nao cadastrado');
     setText('scan-guest-name', '-');
     setText('scan-guest-status', '-');
-    setText('scan-guest-hash', String(hash || '-'));
 }
 
 function clearScanResult() {
@@ -336,7 +334,6 @@ function clearScanResult() {
     setText('scan-result-title', 'Convidado encontrado');
     setText('scan-guest-name', '-');
     setText('scan-guest-status', '-');
-    setText('scan-guest-hash', '-');
 }
 
 async function handleConfirmPresence() {
@@ -402,7 +399,7 @@ async function handleGuestSubmit(event) {
             input.value = '';
         }
 
-        setText('guest-feedback', `Convidado salvo com hash ${hash}.`);
+        setText('guest-feedback', 'Convidado salvo com sucesso.');
         await refreshSummary();
         await refreshGuestList();
     } catch (error) {
@@ -580,7 +577,7 @@ async function refreshGuestList() {
     setText('guest-list-total', `${guests.length} itens`);
 
     if (guests.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4">Nenhum convidado cadastrado ainda.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="3">Nenhum convidado cadastrado ainda.</td></tr>';
         clearQrPreview();
         return;
     }
@@ -592,7 +589,6 @@ async function refreshGuestList() {
                 <tr>
                     <td>${escapeHtml(guest.nome || '')}</td>
                     <td><span class="status-badge ${mapStatusClass(status)}">${escapeHtml(status)}</span></td>
-                    <td>${escapeHtml(guest.hash || '')}</td>
                     <td><button class="table-action" type="button" data-qr-hash="${escapeHtml(guest.hash || '')}">Ver QR</button></td>
                 </tr>
             `;
@@ -654,7 +650,6 @@ function renderGuestQr(guest) {
     }
 
     setText('qr-guest-name', String(guest.nome || 'Convidado'));
-    setText('qr-hash', String(guest.hash || '-'));
     setText('qr-feedback', 'QR Code gerado com sucesso.');
 }
 
@@ -678,7 +673,6 @@ function clearQrPreview() {
     }
 
     setText('qr-guest-name', 'Selecione um convidado');
-    setText('qr-hash', '-');
     setText('qr-feedback', '');
 }
 
@@ -730,7 +724,7 @@ async function handleShareQr() {
     }
 
     const dataUrl = getQrImageDataUrl();
-    const shareMessage = `Convite Beep Wedding - ${selectedGuest.nome} - hash ${selectedGuest.hash}`;
+    const shareMessage = `Convite Beep Wedding - ${selectedGuest.nome}`;
 
     try {
         if (window.plugins && window.plugins.socialsharing && typeof window.plugins.socialsharing.shareWithOptions === 'function') {
