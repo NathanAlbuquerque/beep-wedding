@@ -5,7 +5,8 @@
         booted: false,
         summaryTimer: null,
         currentGuests: [],
-        selectedGuest: null
+        selectedGuest: null,
+        scannerActive: false
     };
 
     app.setText = function setText(elementId, value) {

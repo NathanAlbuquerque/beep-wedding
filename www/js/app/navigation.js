@@ -21,6 +21,10 @@
     };
 
     app.navigateToScreen = function navigateToScreen(screenName, updateHash) {
+        if (app.state && app.state.scannerActive && screenName !== 'checkin' && typeof app.cancelQrScan === 'function') {
+            app.cancelQrScan();
+        }
+
         const validScreens = ['dashboard', 'convidados', 'checkin'];
         const targetScreen = validScreens.includes(screenName) ? screenName : 'dashboard';
 

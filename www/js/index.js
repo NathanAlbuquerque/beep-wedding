@@ -28,4 +28,16 @@
     document.addEventListener('visibilitychange', () => {
         app.handleVisibilityChange();
     }, false);
+
+    document.addEventListener('pause', () => {
+        if (typeof app.cancelQrScan === 'function') {
+            app.cancelQrScan();
+        }
+    }, false);
+
+    windowObject.addEventListener('beforeunload', () => {
+        if (typeof app.cancelQrScan === 'function') {
+            app.cancelQrScan();
+        }
+    }, false);
 }(window));
