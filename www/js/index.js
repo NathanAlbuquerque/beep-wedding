@@ -195,6 +195,46 @@ async function startQrScan() {
 
 function scanQrCode() {
     return new Promise((resolve, reject) => {
+        const mlkitScanner = window.cordova && window.cordova.plugins && window.cordova.plugins.mlkit
+            ? window.cordova.plugins.mlkit.barcodeScanner
+            : null;
+
+        if (mlkitScanner && typeof mlkitScanner.scan === 'function') {
+            mlkitScanner.scan(
+                {
+                    barcodeFormats: {
+                        QRCode: true,
+                        Aztec: false,
+                        CodaBar: false,
+                        Code39: false,
+                        Code93: false,
+                        Code128: false,
+                        DataMatrix: false,
+                        EAN13: false,
+                        EAN8: false,
+                        ITF: false,
+                        PDF417: false,
+                        UPCA: false,
+                        UPCE: false
+                    },
+                    beepOnSuccess: false,
+                    vibrateOnSuccess: false,
+                    detectorSize: 0.72,
+                    rotateCamera: false
+                },
+                (result) => {
+                    if (!result || !result.text) {
+                        resolve('');
+                        return;
+                    }
+
+                    resolve(normalizeScannedHash(result.text));
+                },
+                (error) => reject(error)
+            );
+            return;
+        }
+
         const barcodeScanner = window.cordova && window.cordova.plugins
             ? window.cordova.plugins.barcodeScanner
             : null;
