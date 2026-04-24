@@ -53,10 +53,9 @@ button {
 }
 
 .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
     margin-bottom: 18px;
 }
 
@@ -65,25 +64,31 @@ button {
     font-size: clamp(1.7rem, 4vw, 2.8rem);
 }
 
-.main-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+.main-nav-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 6px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.66);
+    border: 1px solid var(--line);
 }
 
-.nav-chip {
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.8);
-    color: var(--text);
+.nav-tab {
+    border-radius: 12px;
+    border: 1px solid transparent;
+    min-height: 42px;
+    padding: 8px 10px;
+    background: transparent;
+    color: var(--muted);
     font-weight: 700;
 }
 
-.nav-chip.is-active {
+.nav-tab.is-active {
     background: linear-gradient(180deg, #19a76a, #0d7b4c);
     color: #f5fff9;
-    border-color: transparent;
+    border-color: rgba(17, 138, 87, 0.34);
+    box-shadow: 0 8px 18px rgba(17, 138, 87, 0.2);
 }
 
 .screen {
@@ -221,6 +226,10 @@ button {
 
 .convidados-grid {
     margin-top: 0;
+}
+
+.convidados-grid-single {
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .panel {
@@ -602,6 +611,57 @@ button {
     outline: none;
 }
 
+.import-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 52;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+.import-modal.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.import-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 22% 12%, rgba(34, 128, 84, 0.2), rgba(8, 24, 17, 0.64));
+    backdrop-filter: blur(10px);
+}
+
+.import-modal-card {
+    position: relative;
+    z-index: 1;
+    width: min(620px, calc(100% - 24px));
+    margin: 10vh auto 0;
+    border-radius: 22px;
+    padding: 22px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 24px 70px rgba(8, 28, 20, 0.26);
+    border: 1px solid rgba(18, 52, 37, 0.12);
+}
+
+.import-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: rgba(17, 138, 87, 0.08);
+    color: #2b5d45;
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    border: 1px solid rgba(17, 138, 87, 0.14);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .qr-modal,
     .qr-modal-backdrop,
@@ -689,11 +749,6 @@ button {
 }
 
 @media (max-width: 900px) {
-    .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
     .hero-card,
     .panel-grid,
     .roadmap {
@@ -726,13 +781,8 @@ button {
         font-size: 2.1rem;
     }
 
-    .main-nav {
-        width: 100%;
-    }
-
-    .nav-chip {
-        width: 100%;
-        text-align: center;
+    .main-nav-bar {
+        grid-template-columns: 1fr;
     }
 
     .action-grid .action-button,
@@ -746,6 +796,12 @@ button {
     .qr-modal-card {
         width: calc(100% - 16px);
         margin-top: 8vh;
+        padding: 18px;
+    }
+
+    .import-modal-card {
+        width: calc(100% - 16px);
+        margin-top: 12vh;
         padding: 18px;
     }
 

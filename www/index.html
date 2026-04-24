@@ -17,10 +17,10 @@
                     <p class="eyebrow">Controle de acesso do evento</p>
                     <h1 class="app-title">Beep Wedding</h1>
                 </div>
-                <nav class="main-nav" aria-label="Navegacao principal">
-                    <button class="nav-chip is-active" type="button" data-nav-target="dashboard">Dashboard</button>
-                    <button class="nav-chip" type="button" data-nav-target="convidados">Convidados</button>
-                    <button class="nav-chip" type="button" data-nav-target="checkin">Check-in</button>
+                <nav class="main-nav-bar" aria-label="Navegacao principal">
+                    <button class="nav-tab is-active" type="button" data-nav-target="dashboard">Dashboard</button>
+                    <button class="nav-tab" type="button" data-nav-target="convidados">Convidados</button>
+                    <button class="nav-tab" type="button" data-nav-target="checkin">Check-in</button>
                 </nav>
             </header>
 
@@ -60,7 +60,7 @@
                         </div>
                         <div class="action-grid">
                             <button class="action-button" type="button" data-nav-target="convidados">Cadastrar convidado</button>
-                            <button class="action-button" type="button" data-nav-target="convidados">Importar planilha</button>
+                            <button class="action-button" type="button" data-open-import-modal>Importar planilha</button>
                             <button class="action-button" type="button" data-nav-target="convidados">Gerar QR Code</button>
                             <button class="action-button" type="button" data-nav-target="checkin">Abrir check-in</button>
                         </div>
@@ -78,12 +78,13 @@
             </section>
 
             <section class="screen" data-screen="convidados" aria-hidden="true">
-                <section class="panel-grid convidados-grid">
+                <section class="panel-grid convidados-grid convidados-grid-single">
                     <article class="panel">
                         <div class="panel-heading">
                             <div>
                                 <h2>Novo convidado</h2>
                             </div>
+                            <button class="action-button" type="button" data-open-import-modal>Importar planilha</button>
                         </div>
                         <form id="guest-form" class="stack-form">
                             <label class="field-label" for="guest-name">Nome do convidado</label>
@@ -92,21 +93,6 @@
                             <button class="action-button action-button-primary" type="submit">Salvar convidado</button>
                         </form>
                         <p id="guest-feedback" class="inline-feedback" aria-live="polite"></p>
-                    </article>
-
-                    <article class="panel">
-                        <div class="panel-heading">
-                            <div>
-                                <h2>Arquivo CSV ou XLSX</h2>
-                            </div>
-                        </div>
-                        <div class="stack-form">
-                            <label class="field-label" for="guest-file">Selecione o arquivo</label>
-                            <input class="field-input" id="guest-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
-
-                            <button id="import-button" class="action-button action-button-primary" type="button">Importar convidados</button>
-                        </div>
-                        <p id="import-feedback" class="inline-feedback" aria-live="polite"></p>
                     </article>
                 </section>
 
@@ -197,11 +183,34 @@
             </section>
         </div>
 
+        <div id="import-modal" class="import-modal" aria-hidden="true">
+            <div class="import-modal-backdrop" data-import-modal-close></div>
+            <section class="import-modal-card" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
+                <button class="import-modal-close" type="button" data-import-modal-close aria-label="Fechar modal">×</button>
+                <div class="panel-heading import-modal-heading">
+                    <div>
+                        <p class="panel-kicker">Importacao em lote</p>
+                        <h2 id="import-modal-title">Importar convidados</h2>
+                    </div>
+                </div>
+                <div class="stack-form">
+                    <label class="field-label" for="guest-file">Selecione o arquivo CSV ou XLSX</label>
+                    <input class="field-input" id="guest-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
+                    <button id="import-button" class="action-button action-button-primary" type="button">Importar convidados</button>
+                </div>
+                <p id="import-feedback" class="inline-feedback" aria-live="polite"></p>
+            </section>
+        </div>
+
         <script src="cordova.js"></script>
         <script src="js/services/database.js"></script>
         <script src="js/services/permissions.js"></script>
         <script src="js/vendor/xlsx.full.min.js"></script>
         <script src="js/vendor/qrcode.min.js"></script>
+        <script src="js/app/core.js"></script>
+        <script src="js/app/navigation.js"></script>
+        <script src="js/app/guests.js"></script>
+        <script src="js/app/checkin.js"></script>
         <script src="js/index.js"></script>
     </body>
 </html>
