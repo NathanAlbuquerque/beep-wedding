@@ -311,7 +311,7 @@
         app.setText('guest-list-total', `${guests.length} itens`);
 
         if (guests.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="3">Nenhum convidado cadastrado ainda.</td></tr>';
+            tableBody.innerHTML = '<div class="guest-block-empty">Nenhum convidado cadastrado ainda.</div>';
             return;
         }
 
@@ -319,11 +319,19 @@
             .map((guest) => {
                 const status = String(guest.status || 'Ausente');
                 return `
-                    <tr>
-                        <td>${app.escapeHtml(guest.nome || '')}</td>
-                        <td><span class="status-badge ${app.mapStatusClass(status)}">${app.escapeHtml(status)}</span></td>
-                        <td class="guest-table-action-cell"><button class="table-action" type="button" data-qr-hash="${app.escapeHtml(guest.hash || '')}"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM16 16h2v2h-2zM16 20h2v2h-2zM20 16h2v2h-2zM20 20h2v2h-2z"></path></svg></span><span>Abrir QR</span></button></td>
-                    </tr>
+                    <article class="guest-block-item">
+                        <div class="guest-block-main">
+                            <div class="guest-block-field">
+                                <span class="guest-block-label">Nome</span>
+                                <strong class="guest-block-value guest-block-value-name">${app.escapeHtml(guest.nome || '')}</strong>
+                            </div>
+                            <div class="guest-block-field">
+                                <span class="guest-block-label">Status</span>
+                                <span class="guest-block-value guest-block-value-status"><span class="status-badge ${app.mapStatusClass(status)}">${app.escapeHtml(status)}</span></span>
+                            </div>
+                        </div>
+                        <button class="table-action" type="button" data-qr-hash="${app.escapeHtml(guest.hash || '')}"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM16 16h2v2h-2zM16 20h2v2h-2zM20 16h2v2h-2zM20 20h2v2h-2z"></path></svg></span><span>Abrir QR</span></button>
+                    </article>
                 `;
             })
             .join('');
