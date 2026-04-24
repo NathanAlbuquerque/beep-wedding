@@ -110,6 +110,8 @@ function setupGuestManagement() {
     const downloadQrButton = document.getElementById('download-qr-button');
     const shareQrButton = document.getElementById('share-qr-button');
     const tableBody = document.getElementById('guest-list-body');
+    const qrModal = document.getElementById('qr-modal');
+    const modalCloseButtons = document.querySelectorAll('[data-modal-close]');
 
     if (guestForm) {
         guestForm.addEventListener('submit', handleGuestSubmit);
@@ -126,29 +128,41 @@ function setupGuestManagement() {
     }
 
     if (downloadQrButton) {
-        downloadQrButton.addEventListener('click', handleDownloadQr);
+        qrModal.addEventListener('click', (event) => {
+    function renderScanError(hash) {
+        selectedGuest = null;
+
+        const card = document.getElementById('scan-result-card');
+        const confirmPresenceButton = document.getElementById('confirm-presence-button');
+        const guestExitButton = document.getElementById('guest-exit-button');
+        if (card) {
+            card.setAttribute('aria-hidden', 'false');
+            card.classList.remove('is-success');
+            card.classList.add('is-error');
+        }
+
+        if (confirmPresenceButton) {
+            confirmPresenceButton.disabled = true;
+        }
+
+        if (guestExitButton) {
+            guestExitButton.disabled = true;
+        }
+
+        setText('scan-feedback', 'Convidado nao encontrado, por favor leia o QR Code novamente.');
+        setText('scan-result-title', 'QR invalido ou nao cadastrado');
+        setText('scan-guest-name', '-');
+        setText('scan-guest-status', '-');
     }
-
-    if (shareQrButton) {
-        shareQrButton.addEventListener('click', handleShareQr);
-    }
-
-    if (tableBody) {
-        tableBody.addEventListener('click', (event) => {
-            const target = event.target;
-            if (!target || !target.closest) {
-                return;
+            if (event.target && event.target.hasAttribute && event.target.hasAttribute('data-modal-close')) {
+                closeQrModal();
             }
-
-            const actionButton = target.closest('[data-qr-hash]');
-            if (!actionButton) {
-                return;
-            }
-
-            const hash = actionButton.getAttribute('data-qr-hash');
-            selectGuestForQr(hash);
         });
     }
+
+    modalCloseButtons.forEach((button) => {
+        button.addEventListener('click', closeQrModal);
+    });
 }
 
 function setupCheckinScanner() {
@@ -267,7 +281,6 @@ function scanQrCode() {
         );
     });
 }
-
 function normalizeScannedHash(value) {
     const raw = String(value || '').trim();
     if (!raw) {
@@ -299,6 +312,17 @@ async function validateGuestByHash(hash) {
     }
 
     return window.BeepWeddingDatabase.findGuestByHash(hash);
+}
+
+function closeQrModal() {
+    const qrModal = document.getElementById('qr-modal');
+
+    if (qrModal) {
+        qrModal.classList.remove('is-open');
+        qrModal.setAttribute('aria-hidden', 'true');
+    }
+
+    clearQrPreview();
 }
 
 function renderScanSuccess(guest) {
@@ -629,7 +653,7 @@ async function refreshGuestList() {
                 <tr>
                     <td>${escapeHtml(guest.nome || '')}</td>
                     <td><span class="status-badge ${mapStatusClass(status)}">${escapeHtml(status)}</span></td>
-                    <td><button class="table-action" type="button" data-qr-hash="${escapeHtml(guest.hash || '')}">Ver QR</button></td>
+                    <td class="guest-table-action-cell"><button class="table-action" type="button" data-qr-hash="${escapeHtml(guest.hash || '')}">Abrir QR</button></td>
                 </tr>
             `;
         })
@@ -659,7 +683,8 @@ function selectGuestForQr(hash) {
 function renderGuestQr(guest) {
     selectedGuest = guest;
 
-    const qrPanel = document.getElementById('qr-panel');
+    const qrModal = document.getElementById('qr-modal');
+    const qrTitle = document.getElementById('qr-modal-title');
     const qrContainer = document.getElementById('guest-qr-code');
     const downloadButton = document.getElementById('download-qr-button');
     const shareButton = document.getElementById('share-qr-button');
@@ -677,8 +702,13 @@ function renderGuestQr(guest) {
         correctLevel: window.QRCode.CorrectLevel.H
     });
 
-    if (qrPanel) {
-        qrPanel.setAttribute('aria-hidden', 'false');
+    if (qrTitle) {
+        qrTitle.textContent = String(guest.nome || 'Convidado');
+    }
+
+    if (qrModal) {
+        qrModal.classList.add('is-open');
+        qrModal.setAttribute('aria-hidden', 'false');
     }
 
     if (downloadButton) {
@@ -689,7 +719,6 @@ function renderGuestQr(guest) {
         shareButton.disabled = false;
     }
 
-    setText('qr-guest-name', String(guest.nome || 'Convidado'));
     setText('qr-feedback', 'QR Code gerado com sucesso.');
 }
 
@@ -699,6 +728,7 @@ function clearQrPreview() {
     const qrContainer = document.getElementById('guest-qr-code');
     const downloadButton = document.getElementById('download-qr-button');
     const shareButton = document.getElementById('share-qr-button');
+    const qrTitle = document.getElementById('qr-modal-title');
 
     if (qrContainer) {
         qrContainer.innerHTML = '';
@@ -712,7 +742,9 @@ function clearQrPreview() {
         shareButton.disabled = true;
     }
 
-    setText('qr-guest-name', 'Selecione um convidado');
+    if (qrTitle) {
+        qrTitle.textContent = 'Selecione um convidado';
+    }
     setText('qr-feedback', '');
 }
 

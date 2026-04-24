@@ -6,7 +6,7 @@
         },
         {
             title: 'Permissão de câmera',
-            description: 'Base pronta para o leitor de QR Code usar a câmera do dispositivo na etapa de check-in.'
+            description: 'Leitor de QR Code preparado para usar a câmera do dispositivo na etapa de check-in.'
         },
         {
             title: 'Armazenamento e mídia',

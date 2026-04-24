@@ -328,7 +328,8 @@ button {
 .guest-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 580px;
+    table-layout: fixed;
+    min-width: 0;
 }
 
 .guest-table th,
@@ -338,8 +339,28 @@ button {
     padding: 11px 10px;
 }
 
-.guest-table td:last-child {
-    width: 90px;
+.guest-table th:nth-child(1),
+.guest-table td:nth-child(1) {
+    width: 52%;
+}
+
+.guest-table th:nth-child(2),
+.guest-table td:nth-child(2) {
+    width: 24%;
+}
+
+.guest-table th:nth-child(3),
+.guest-table td:nth-child(3) {
+    width: 24%;
+}
+
+.guest-table-action-cell {
+    text-align: right;
+}
+
+.guest-table-action-cell .table-action {
+    width: auto;
+    min-width: 108px;
 }
 
 .table-action {
@@ -386,14 +407,14 @@ button {
     background: rgba(95, 152, 121, 0.24);
 }
 
-.qr-panel {
-    margin-top: 18px;
-}
-
 .qr-content {
     display: grid;
     grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
     gap: 18px;
+    align-items: center;
+}
+
+.qr-content-modal {
     align-items: center;
 }
 
@@ -501,6 +522,93 @@ button {
     flex: 0 1 auto;
     min-width: 164px;
     text-align: center;
+}
+
+.qr-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+.qr-modal.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.qr-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 12%, rgba(34, 128, 84, 0.2), rgba(8, 24, 17, 0.66));
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 220ms ease;
+}
+
+.qr-modal.is-open .qr-modal-backdrop {
+    opacity: 1;
+}
+
+.qr-modal-card {
+    position: relative;
+    z-index: 1;
+    width: min(720px, calc(100% - 24px));
+    margin: 5vh auto 0;
+    border-radius: 26px;
+    padding: 22px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 28px 80px rgba(8, 28, 20, 0.28);
+    border: 1px solid rgba(18, 52, 37, 0.12);
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+    transition: opacity 220ms ease, transform 240ms ease;
+}
+
+.qr-modal.is-open .qr-modal-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.qr-modal-heading {
+    margin-bottom: 14px;
+}
+
+.qr-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: rgba(17, 138, 87, 0.08);
+    color: #2b5d45;
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    border: 1px solid rgba(17, 138, 87, 0.14);
+    transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.qr-modal-close:hover,
+.qr-modal-close:focus-visible {
+    background: rgba(17, 138, 87, 0.16);
+    color: #0f5a38;
+    transform: scale(1.04);
+    outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .qr-modal,
+    .qr-modal-backdrop,
+    .qr-modal-card,
+    .qr-modal-close {
+        transition: none;
+    }
 }
 
 .checklist {
@@ -633,5 +741,15 @@ button {
     .qr-actions .action-button {
         width: 100%;
         min-width: 0;
+    }
+
+    .qr-modal-card {
+        width: calc(100% - 16px);
+        margin-top: 8vh;
+        padding: 18px;
+    }
+
+    .qr-content {
+        grid-template-columns: 1fr;
     }
 }

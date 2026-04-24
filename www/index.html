@@ -55,7 +55,6 @@
                     <article class="panel">
                         <div class="panel-heading">
                             <div>
-                                <p class="panel-kicker">Fluxo base</p>
                                 <h2>Atalhos do app</h2>
                             </div>
                         </div>
@@ -70,7 +69,6 @@
                     <article class="panel">
                         <div class="panel-heading">
                             <div>
-                                <p class="panel-kicker">Base offline</p>
                                 <h2>Preparacao da infraestrutura</h2>
                             </div>
                         </div>
@@ -84,7 +82,6 @@
                     <article class="panel">
                         <div class="panel-heading">
                             <div>
-                                <p class="panel-kicker">RF02 - Cadastro individual</p>
                                 <h2>Novo convidado</h2>
                             </div>
                         </div>
@@ -100,7 +97,6 @@
                     <article class="panel">
                         <div class="panel-heading">
                             <div>
-                                <p class="panel-kicker">RF03 - Importacao em lote</p>
                                 <h2>Arquivo CSV ou XLSX</h2>
                             </div>
                         </div>
@@ -117,7 +113,6 @@
                 <section class="panel guest-list-panel">
                     <div class="panel-heading">
                         <div>
-                            <p class="panel-kicker">Convidados cadastrados</p>
                             <h2>Ultimos registros</h2>
                         </div>
                         <div class="guest-list-tools">
@@ -136,26 +131,6 @@
                             </thead>
                             <tbody id="guest-list-body"></tbody>
                         </table>
-                    </div>
-                </section>
-
-                <section class="panel qr-panel" id="qr-panel" aria-hidden="true">
-                    <div class="panel-heading">
-                        <div>
-                            <p class="panel-kicker">RF04 - QR Code</p>
-                            <h2 id="qr-guest-name">Selecione um convidado</h2>
-                        </div>
-                    </div>
-                    <div class="qr-content">
-                        <div class="qr-stage" id="guest-qr-code"></div>
-                        <div class="qr-meta">
-                            <p class="hero-text">QR do convite pronto para compartilhamento.</p>
-                            <div class="qr-actions">
-                                <button id="download-qr-button" class="action-button" type="button" disabled>Baixar QR</button>
-                                <button id="share-qr-button" class="action-button action-button-primary" type="button" disabled>Compartilhar</button>
-                            </div>
-                            <p id="qr-feedback" class="inline-feedback" aria-live="polite"></p>
-                        </div>
                     </div>
                 </section>
             </section>
@@ -197,6 +172,30 @@
                 </section>
             </section>
         </main>
+
+        <div id="qr-modal" class="qr-modal" aria-hidden="true">
+            <div class="qr-modal-backdrop" data-modal-close></div>
+            <section class="qr-modal-card" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+                <button class="qr-modal-close" type="button" data-modal-close aria-label="Fechar modal">×</button>
+                <div class="panel-heading qr-modal-heading">
+                    <div>
+                        <p class="panel-kicker">QR do convidado</p>
+                        <h2 id="qr-modal-title">Selecione um convidado</h2>
+                    </div>
+                </div>
+                <div class="qr-content qr-content-modal">
+                    <div class="qr-stage" id="guest-qr-code"></div>
+                    <div class="qr-meta">
+                        <p class="hero-text">QR do convite pronto para compartilhar ou baixar.</p>
+                        <div class="qr-actions">
+                            <button id="download-qr-button" class="action-button" type="button" disabled>Baixar QR</button>
+                            <button id="share-qr-button" class="action-button action-button-primary" type="button" disabled>Compartilhar</button>
+                        </div>
+                        <p id="qr-feedback" class="inline-feedback" aria-live="polite"></p>
+                    </div>
+                </div>
+            </section>
+        </div>
 
         <script src="cordova.js"></script>
         <script src="js/services/database.js"></script>
