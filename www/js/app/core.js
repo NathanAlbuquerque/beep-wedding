@@ -1,12 +1,18 @@
 (function initializeCore(windowObject) {
     const app = windowObject.BeepWeddingApp || {};
+    const configuredEventName = windowObject.BEEP_WEDDING_EVENT_NAME || windowObject.BEEP_WEDDING_EVENT || '';
 
     app.state = app.state || {
         booted: false,
         summaryTimer: null,
         currentGuests: [],
         selectedGuest: null,
-        scannerActive: false
+        scannerActive: false,
+        toastTimer: null
+    };
+
+    app.config = app.config || {
+        eventName: String(configuredEventName || '').trim() || 'Casamento Denyse & Nathan'
     };
 
     app.setText = function setText(elementId, value) {
@@ -18,6 +24,40 @@
 
     app.setStatus = function setStatus(message) {
         app.setText('app-status', message);
+    };
+
+    app.applyEventTitle = function applyEventTitle() {
+        const titleElement = document.getElementById('event-title');
+        if (!titleElement) {
+            return;
+        }
+
+        titleElement.textContent = String(app.config.eventName || 'Beep Wedding');
+    };
+
+    app.showToast = function showToast(message, tone) {
+        const toast = document.getElementById('app-toast');
+        if (!toast) {
+            return;
+        }
+
+        if (app.state.toastTimer) {
+            windowObject.clearTimeout(app.state.toastTimer);
+            app.state.toastTimer = null;
+        }
+
+        toast.textContent = String(message || '');
+        toast.classList.remove('is-success', 'is-error', 'is-visible');
+
+        const toneClass = String(tone || '').toLowerCase() === 'error' ? 'is-error' : 'is-success';
+        toast.classList.add(toneClass, 'is-visible');
+        toast.setAttribute('aria-hidden', 'false');
+
+        app.state.toastTimer = windowObject.setTimeout(() => {
+            toast.classList.remove('is-visible');
+            toast.setAttribute('aria-hidden', 'true');
+            app.state.toastTimer = null;
+        }, 2200);
     };
 
     app.generateGuestHash = function generateGuestHash() {
@@ -93,6 +133,7 @@
 
     app.initializeBaseState = async function initializeBaseState() {
         app.setStatus('Preparando armazenamento local...');
+        app.applyEventTitle();
 
         if (windowObject.BeepWeddingDatabase) {
             await windowObject.BeepWeddingDatabase.initialize();

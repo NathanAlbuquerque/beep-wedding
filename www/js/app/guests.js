@@ -111,7 +111,7 @@
         const nome = input ? input.value.trim() : '';
 
         if (!nome) {
-            app.setText('guest-feedback', 'Informe o nome para cadastrar o convidado.');
+            app.showToast('Informe o nome para cadastrar o convidado.', 'error');
             return;
         }
 
@@ -129,11 +129,11 @@
                 input.value = '';
             }
 
-            app.setText('guest-feedback', 'Convidado salvo com sucesso.');
+            app.showToast('Convidado salvo com sucesso.', 'success');
             await app.refreshSummary();
             await app.refreshGuestList();
         } catch (_error) {
-            app.setText('guest-feedback', 'Nao foi possivel salvar o convidado. Tente novamente.');
+            app.showToast('Nao foi possivel salvar o convidado. Tente novamente.', 'error');
         }
     };
 
@@ -322,11 +322,9 @@
                     <article class="guest-block-item">
                         <div class="guest-block-main">
                             <div class="guest-block-field">
-                                <span class="guest-block-label">Nome</span>
                                 <strong class="guest-block-value guest-block-value-name">${app.escapeHtml(guest.nome || '')}</strong>
                             </div>
                             <div class="guest-block-field">
-                                <span class="guest-block-label">Status</span>
                                 <span class="guest-block-value guest-block-value-status"><span class="status-badge ${app.mapStatusClass(status)}">${app.escapeHtml(status)}</span></span>
                             </div>
                         </div>

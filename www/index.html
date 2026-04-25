@@ -33,12 +33,10 @@
         </section>
 
         <main class="app-shell" aria-hidden="true">
-            <!-- topbar esta muito grosso, estreitar mais ele -->
             <header class="topbar panel">
                 <div>
                     <p class="eyebrow">Controle de acesso</p>
-                    <!-- no lugar de Beep Wedding, colocar o nome do casamento, vindo de alguma variavel global: ex: Casamento Denyse & Nathan -->
-                    <h1 class="app-title">Beep Wedding</h1>
+                    <h1 id="event-title" class="app-title">Beep Wedding</h1>
                 </div>
                 <nav class="main-nav-bar" aria-label="Navegacao principal">
                     <button class="nav-tab is-active" type="button" data-nav-target="dashboard">
@@ -66,9 +64,7 @@
                 <section class="hero-card">
                     <div class="hero-copy">
                         <p class="eyebrow">Visao geral em tempo real</p>
-                        <!-- remove --><h2 class="hero-title">Dashboard do evento</h2>
                     </div>
-                    <!-- coloca um ao lado do outro -->
                     <div class="hero-metrics" id="summary-metrics">
                         <article class="metric-card metric-total">
                             <span class="metric-label">Total</span>
@@ -84,13 +80,6 @@
                         </article>
                     </div>
                 </section>
-
-                <!-- remove -->
-                <div class="dashboard-status-bar">
-                    <span id="app-status" class="status-pill">Inicializando base local...</span>
-                    <span id="last-sync" class="status-note">Aguardando primeira leitura</span>
-                </div>
-
             </section>
 
             <section class="screen" data-screen="convidados" aria-hidden="true">
@@ -108,8 +97,7 @@
                             </button>
                         </div>
                         <form id="guest-form" class="stack-form">
-                            <!-- remove --> <label class="field-label" for="guest-name">Nome do convidado</label>
-                            <!-- placeholder novo: "Nome do convidado" --> <input class="field-input" id="guest-name" name="nome" type="text" placeholder="Ex: Maria Oliveira" required>
+                            <input class="field-input" id="guest-name" name="nome" type="text" placeholder="Nome do convidado" required>
 
                             <button class="action-button action-button-primary" type="submit">
                                 <span class="button-icon" aria-hidden="true">
@@ -118,14 +106,11 @@
                                 <span>Salvar convidado</span>
                             </button>
                         </form>
-                        <!-- remover esse feedback, tranformar em toast que aparece e depois some -->
-                        <p id="guest-feedback" class="inline-feedback" aria-live="polite"></p>
                     </article>
                 </section>
 
                 <section class="panel guest-list-panel">
                     <div class="panel-heading">
-                        <!-- nessa listagem remover titulos "nome" e "status". alinhar botao "Abrir QR" verticalmente. Deixar alinhado centralizado verticalmente -->
                         <div>
                             <h2>Ultimos registros</h2>
                         </div>
@@ -265,6 +250,8 @@
                 <p id="import-feedback" class="inline-feedback" aria-live="polite"></p>
             </section>
         </div>
+
+        <div id="app-toast" class="app-toast" aria-live="polite" aria-hidden="true"></div>
 
         <script src="cordova.js"></script>
         <script src="js/services/database.js"></script>
