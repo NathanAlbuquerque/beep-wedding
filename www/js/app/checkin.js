@@ -32,7 +32,7 @@
     app.requestScanCancel = function requestScanCancel() {
         app.cancelQrScan().finally(() => {
             app.setScannerUiActive(false);
-            app.setText('scan-feedback', 'Leitura cancelada.');
+            app.showToast('Leitura cancelada.', 'error');
         });
     };
 
@@ -44,24 +44,24 @@
         const mlKitScanner = app.getMlKitScanner();
         const nativeScanner = app.getNativeBarcodeScanner();
 
-        app.setText('scan-feedback', mlKitScanner
+        app.showToast(mlKitScanner
             ? 'Abrindo leitor rapido por ML Kit...'
             : (nativeScanner
                 ? 'Abrindo camera nativa para leitura...'
-                : 'Abrindo camera para leitura...'));
+            : 'Abrindo camera para leitura...'));
         app.clearScanResult();
         app.setScannerUiActive(true);
 
         try {
             const scannedHash = await app.scanQrCode();
             if (!scannedHash) {
-                app.setText('scan-feedback', 'Leitura cancelada.');
+                app.showToast('Leitura cancelada.', 'error');
                 return;
             }
 
             const guest = await app.validateGuestByHash(scannedHash);
             if (!guest) {
-                app.setText('scan-feedback', 'QR lido, mas o convidado nao foi encontrado na base.');
+                app.showToast('QR lido, mas o convidado nao foi encontrado na base.', 'error');
                 app.renderScanError();
                 return;
             }
@@ -72,7 +72,7 @@
             const message = error && error.message
                 ? String(error.message)
                 : 'Falha ao ler QR Code. Tente novamente.';
-            app.setText('scan-feedback', message);
+            app.showToast(message, 'error');
         } finally {
             app.setScannerUiActive(false);
         }
@@ -432,7 +432,7 @@
             guestExitButton.disabled = false;
         }
 
-        app.setText('scan-feedback', 'Convidado validado com sucesso.');
+        app.showToast('Convidado validado com sucesso.', 'success');
         app.setText('scan-result-title', 'Convidado encontrado');
         app.setText('scan-guest-name', String(guest.nome || '-'));
         app.setText('scan-guest-status', String(guest.status || '-'));
@@ -446,7 +446,7 @@
         const guestExitButton = document.getElementById('guest-exit-button');
 
         if (card) {
-            card.setAttribute('aria-hidden', 'false');
+            card.setAttribute('aria-hidden', 'true');
             card.classList.remove('is-success');
             card.classList.add('is-error');
         }
@@ -459,7 +459,7 @@
             guestExitButton.disabled = true;
         }
 
-        app.setText('scan-feedback', 'Convidado nao encontrado, por favor leia o QR Code novamente.');
+        app.showToast('Convidado nao encontrado, por favor leia o QR Code novamente.', 'error');
         app.setText('scan-result-title', 'QR invalido ou nao cadastrado');
         app.setText('scan-guest-name', '-');
         app.setText('scan-guest-status', '-');
@@ -501,7 +501,7 @@
 
     app.handleAccessAction = async function handleAccessAction(nextStatus, successMessage) {
         if (!app.state.selectedGuest) {
-            app.setText('scan-feedback', 'Leia um QR Code valido antes de executar a acao.');
+            app.showToast('Leia um QR Code valido antes de executar a acao.', 'error');
             return;
         }
 
@@ -513,18 +513,18 @@
             );
 
             if (!updatedGuest) {
-                app.setText('scan-feedback', 'Nao foi possivel atualizar o convidado.');
+                app.showToast('Nao foi possivel atualizar o convidado.', 'error');
                 return;
             }
 
             app.state.selectedGuest = updatedGuest;
             app.renderScanSuccess(updatedGuest);
-            app.setText('scan-feedback', successMessage);
+            app.showToast(successMessage, 'success');
 
             await app.refreshSummary();
             await app.refreshGuestList();
         } catch (_error) {
-            app.setText('scan-feedback', 'Nao foi possivel atualizar o status do convidado.');
+            app.showToast('Nao foi possivel atualizar o status do convidado.', 'error');
         }
     };
 

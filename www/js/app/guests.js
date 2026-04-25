@@ -308,7 +308,6 @@
             : await windowObject.BeepWeddingDatabase.listGuests(300);
 
         app.state.currentGuests = guests;
-        app.setText('guest-list-total', `${guests.length} itens`);
 
         if (guests.length === 0) {
             tableBody.innerHTML = '<div class="guest-block-empty">Nenhum convidado cadastrado ainda.</div>';
