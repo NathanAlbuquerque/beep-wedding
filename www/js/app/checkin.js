@@ -3,11 +3,21 @@
 
     app.setupCheckinScanner = function setupCheckinScanner() {
         const scanButton = document.getElementById('scan-qr-button');
+        const cancelScanButton = document.getElementById('cancel-scan-button');
+        const scannerOverlayClose = document.getElementById('scanner-overlay-close');
         const confirmPresenceButton = document.getElementById('confirm-presence-button');
         const guestExitButton = document.getElementById('guest-exit-button');
 
         if (scanButton) {
             scanButton.addEventListener('click', app.startQrScan);
+        }
+
+        if (cancelScanButton) {
+            cancelScanButton.addEventListener('click', app.requestScanCancel);
+        }
+
+        if (scannerOverlayClose) {
+            scannerOverlayClose.addEventListener('click', app.requestScanCancel);
         }
 
         if (confirmPresenceButton) {
@@ -17,6 +27,13 @@
         if (guestExitButton) {
             guestExitButton.addEventListener('click', app.handleGuestExit);
         }
+    };
+
+    app.requestScanCancel = function requestScanCancel() {
+        app.cancelQrScan().finally(() => {
+            app.setScannerUiActive(false);
+            app.setText('scan-feedback', 'Leitura cancelada.');
+        });
     };
 
     app.startQrScan = async function startQrScan() {
@@ -141,6 +158,17 @@
         });
     };
 
+    app.destroyQrScanner = function destroyQrScanner() {
+        const scanner = windowObject.QRScanner;
+        if (!scanner || typeof scanner.destroy !== 'function') {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve) => {
+            scanner.destroy(() => resolve());
+        });
+    };
+
     app.cancelQrScan = function cancelQrScan() {
         const scanner = windowObject.QRScanner;
         if (!scanner || typeof scanner.cancelScan !== 'function') {
@@ -149,14 +177,29 @@
 
         return new Promise((resolve) => {
             scanner.cancelScan(() => {
-                app.hideQrScanner().finally(() => resolve());
+                app.hideQrScanner()
+                    .then(() => app.destroyQrScanner())
+                    .finally(() => resolve());
             });
         });
     };
 
     app.setScannerUiActive = function setScannerUiActive(isActive) {
-        app.state.scannerActive = Boolean(isActive);
-        document.body.classList.toggle('scanner-active', Boolean(isActive));
+        const active = Boolean(isActive);
+        const cancelScanButton = document.getElementById('cancel-scan-button');
+        const scannerOverlay = document.getElementById('scanner-overlay');
+
+        app.state.scannerActive = active;
+        document.body.classList.toggle('scanner-active', active);
+        document.documentElement.classList.toggle('scanner-active', active);
+
+        if (cancelScanButton) {
+            cancelScanButton.hidden = !active;
+        }
+
+        if (scannerOverlay) {
+            scannerOverlay.setAttribute('aria-hidden', String(!active));
+        }
     };
 
     app.getScannerErrorMessage = function getScannerErrorMessage(error) {

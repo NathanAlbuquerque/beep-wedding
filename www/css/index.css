@@ -25,6 +25,11 @@ html {
     overscroll-behavior: none;
 }
 
+html.scanner-active,
+html.scanner-active body {
+    background: transparent !important;
+}
+
 body {
     margin: 0;
     min-height: 100vh;
@@ -47,9 +52,23 @@ body.scanner-active .app-shell {
     pointer-events: none;
 }
 
+body.scanner-active .screen,
+body.scanner-active .panel,
+body.scanner-active .hero-card,
+body.scanner-active .status-pill,
+body.scanner-active .status-note,
+body.scanner-active .main-nav-bar {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
 body.scanner-active .qr-modal,
 body.scanner-active .import-modal {
     display: none;
+}
+
+body.scanner-active .scanner-overlay {
+    display: flex;
 }
 
 button,
@@ -615,6 +634,43 @@ button {
 .scan-actions #guest-exit-button {
     border-color: rgba(201, 79, 62, 0.28);
     box-shadow: 0 10px 24px rgba(201, 79, 62, 0.12);
+}
+
+.scanner-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+    padding: max(18px, env(safe-area-inset-top, 0px)) 14px max(20px, env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.12) 34%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+.scanner-overlay-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.scanner-overlay-hint {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #ffffff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.scanner-frame {
+    width: min(72vw, 320px);
+    aspect-ratio: 1;
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    border-radius: 22px;
+    align-self: center;
+    margin-bottom: 10vh;
+    box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0.16);
 }
 
 .qr-modal {
