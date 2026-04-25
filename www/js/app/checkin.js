@@ -37,16 +37,15 @@
     };
 
     app.startQrScan = async function startQrScan() {
-        if (!windowObject.QRScanner) {
-            app.setText('scan-feedback', 'Plugin QRScanner nao esta disponivel neste dispositivo.');
-            return;
-        }
-
         if (app.state.scannerActive) {
             return;
         }
 
-        app.setText('scan-feedback', 'Abrindo camera para leitura...');
+        const nativeScanner = app.getNativeBarcodeScanner();
+
+        app.setText('scan-feedback', nativeScanner
+            ? 'Abrindo camera nativa para leitura...'
+            : 'Abrindo camera para leitura...');
         app.clearScanResult();
         app.setScannerUiActive(true);
 
@@ -78,10 +77,34 @@
 
     app.scanQrCode = function scanQrCode() {
         return new Promise((resolve, reject) => {
+            const nativeScanner = app.getNativeBarcodeScanner();
+
+            if (nativeScanner && typeof nativeScanner.scan === 'function') {
+                nativeScanner.scan((result) => {
+                    if (!result || result.cancelled) {
+                        resolve('');
+                        return;
+                    }
+
+                    resolve(app.normalizeScannedHash(result.text || result.data || ''));
+                }, (error) => {
+                    reject(new Error(app.getScannerErrorMessage(error)));
+                }, {
+                    preferFrontCamera: false,
+                    showFlipCameraButton: false,
+                    showTorchButton: true,
+                    disableSuccessBeep: true,
+                    prompt: 'Aponte a camera para o QR Code do convidado',
+                    formats: 'QR_CODE',
+                    resultDisplayDuration: 0
+                });
+                return;
+            }
+
             const scanner = windowObject.QRScanner;
 
             if (!scanner || typeof scanner.prepare !== 'function' || typeof scanner.scan !== 'function') {
-                reject(new Error('Plugin QRScanner indisponivel neste dispositivo.'));
+                reject(new Error('Nenhum plugin de scanner esta disponivel neste dispositivo.'));
                 return;
             }
 
@@ -109,6 +132,19 @@
                     reject(error instanceof Error ? error : new Error(app.getScannerErrorMessage(error)));
                 });
         });
+    };
+
+    app.getNativeBarcodeScanner = function getNativeBarcodeScanner() {
+        if (!windowObject.cordova || !windowObject.cordova.plugins) {
+            return null;
+        }
+
+        const scanner = windowObject.cordova.plugins.barcodeScanner;
+        if (!scanner || typeof scanner.scan !== 'function') {
+            return null;
+        }
+
+        return scanner;
     };
 
     app.prepareQrScanner = function prepareQrScanner() {
@@ -170,18 +206,8 @@
     };
 
     app.cancelQrScan = function cancelQrScan() {
-        const scanner = windowObject.QRScanner;
-        if (!scanner || typeof scanner.cancelScan !== 'function') {
-            return Promise.resolve();
-        }
-
-        return new Promise((resolve) => {
-            scanner.cancelScan(() => {
-                app.hideQrScanner()
-                    .then(() => app.destroyQrScanner())
-                    .finally(() => resolve());
-            });
-        });
+        app.setScannerUiActive(false);
+        return Promise.resolve();
     };
 
     app.setScannerUiActive = function setScannerUiActive(isActive) {

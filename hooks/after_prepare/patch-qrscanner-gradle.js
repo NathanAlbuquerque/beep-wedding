@@ -6,7 +6,9 @@ const path = require('path');
 const workspaceRoot = path.resolve(__dirname, '..', '..');
 const targets = [
     path.join(workspaceRoot, 'plugins', 'cordova-plugin-qrscanner', 'src', 'android', 'qrscanner.gradle'),
-    path.join(workspaceRoot, 'platforms', 'android', 'cordova-plugin-qrscanner', 'app-qrscanner.gradle')
+    path.join(workspaceRoot, 'platforms', 'android', 'cordova-plugin-qrscanner', 'app-qrscanner.gradle'),
+    path.join(workspaceRoot, 'plugins', 'phonegap-plugin-barcodescanner', 'src', 'android', 'barcodescanner.gradle'),
+    path.join(workspaceRoot, 'platforms', 'android', 'phonegap-plugin-barcodescanner', 'app-barcodescanner.gradle')
 ];
 
 function patchGradleFile(filePath) {
@@ -15,7 +17,9 @@ function patchGradleFile(filePath) {
     }
 
     const originalContent = fs.readFileSync(filePath, 'utf8');
-    const updatedContent = originalContent.replace(/\bcompile\s+'(com\.[^']+)'/g, "implementation '$1'");
+    const updatedContent = originalContent.replace(/\bcompile\s*(\()/g, 'implementation$1')
+        .replace(/\bcompile\s+'(com\.[^']+)'/g, "implementation '$1'")
+        .replace(/\bcompile\s*\(name:/g, 'implementation(name:');
 
     if (updatedContent !== originalContent) {
         fs.writeFileSync(filePath, updatedContent, 'utf8');
