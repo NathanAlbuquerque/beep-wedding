@@ -347,6 +347,40 @@
         app.renderGuestQr(selected);
     };
 
+    app.isGuestHashValid = function isGuestHashValid(hash) {
+        const normalized = String(hash || '').trim();
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized);
+    };
+
+    app.buildQrPayload = function buildQrPayload(hash) {
+        const normalized = String(hash || '').trim();
+        if (!app.isGuestHashValid(normalized)) {
+            throw new Error('Hash invalido para gerar QR Code.');
+        }
+
+        // URL payload improves readability in native camera apps and scanner interoperability.
+        return `https://beepwedding.app/invite?hash=${encodeURIComponent(normalized)}`;
+    };
+
+    app.validateQrRender = function validateQrRender(container) {
+        if (!container) {
+            return false;
+        }
+
+        const canvas = container.querySelector('canvas');
+        const image = container.querySelector('img');
+
+        if (canvas && canvas.width > 0 && canvas.height > 0) {
+            return true;
+        }
+
+        if (image && image.src) {
+            return true;
+        }
+
+        return false;
+    };
+
     app.renderGuestQr = function renderGuestQr(guest) {
         app.state.selectedGuest = guest;
 
@@ -361,13 +395,30 @@
             return;
         }
 
+        let payload = '';
+        try {
+            payload = app.buildQrPayload(guest.hash);
+        } catch (_error) {
+            app.setText('qr-feedback', 'Nao foi possivel gerar QR Code: hash invalido.');
+            return;
+        }
+
         qrContainer.innerHTML = '';
         new windowObject.QRCode(qrContainer, {
-            text: String(guest.hash || ''),
-            width: 190,
-            height: 190,
+            text: payload,
+            width: 220,
+            height: 220,
+            colorDark: '#111111',
+            colorLight: '#ffffff',
             correctLevel: windowObject.QRCode.CorrectLevel.H
         });
+
+        if (!app.validateQrRender(qrContainer)) {
+            app.setText('qr-feedback', 'Falha na renderizacao do QR Code.');
+            return;
+        }
+
+        app.state.selectedGuestQrPayload = payload;
 
         if (qrTitle) {
             qrTitle.textContent = String(guest.nome || 'Convidado');
@@ -402,6 +453,7 @@
 
     app.clearQrPreview = function clearQrPreview() {
         app.state.selectedGuest = null;
+        app.state.selectedGuestQrPayload = null;
 
         const qrContainer = document.getElementById('guest-qr-code');
         const downloadButton = document.getElementById('download-qr-button');
