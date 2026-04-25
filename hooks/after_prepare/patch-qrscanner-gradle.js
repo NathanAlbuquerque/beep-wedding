@@ -26,6 +26,15 @@ const splashIconTargets = [
     path.join(workspaceRoot, 'platforms', 'android', 'app', 'src', 'main', 'res', 'drawable', 'ic_cdv_splashscreen.xml')
 ];
 
+const mlKitStringTargets = [
+    path.join(workspaceRoot, 'plugins', 'cordova-plugin-mlkit-barcode-scanner', 'src', 'android', 'res', 'values', 'strings-en.xml'),
+    path.join(workspaceRoot, 'platforms', 'android', 'app', 'src', 'main', 'res', 'values', 'strings.xml')
+];
+
+const androidManifestTargets = [
+    path.join(workspaceRoot, 'platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml')
+];
+
 function patchGradleFile(filePath) {
     if (!fs.existsSync(filePath)) {
         return;
@@ -105,6 +114,39 @@ function patchSplashIconFile(filePath) {
     }
 }
 
+function patchMlKitStringsFile(filePath) {
+    if (!fs.existsSync(filePath)) {
+        return;
+    }
+
+    const originalContent = fs.readFileSync(filePath, 'utf8');
+    const updatedContent = originalContent
+        .replace(/\s*<string name="app_name">[\s\S]*?<\/string>\s*/g, '\n')
+        .replace(/\s*<string name="launcher_name">[\s\S]*?<\/string>\s*/g, '\n')
+        .replace(/\s*<string name="activity_name">[\s\S]*?<\/string>\s*/g, '\n')
+        .replace(/\n{3,}/g, '\n\n');
+
+    if (updatedContent !== originalContent) {
+        fs.writeFileSync(filePath, updatedContent, 'utf8');
+        console.log(`Patched ML Kit strings file: ${filePath}`);
+    }
+}
+
+function patchAndroidManifestFile(filePath) {
+    if (!fs.existsSync(filePath)) {
+        return;
+    }
+
+    const originalContent = fs.readFileSync(filePath, 'utf8');
+    const updatedContent = originalContent
+        .replace(/\s*<uses-feature android:name="android\.hardware\.camera" android:required="true"\s*\/?>\s*/g, '\n');
+
+    if (updatedContent !== originalContent) {
+        fs.writeFileSync(filePath, updatedContent, 'utf8');
+        console.log(`Patched Android manifest camera feature: ${filePath}`);
+    }
+}
+
 for (const filePath of targets) {
     patchGradleFile(filePath);
 }
@@ -119,4 +161,12 @@ for (const filePath of splashColorTargets) {
 
 for (const filePath of splashIconTargets) {
     patchSplashIconFile(filePath);
+}
+
+for (const filePath of mlKitStringTargets) {
+    patchMlKitStringsFile(filePath);
+}
+
+for (const filePath of androidManifestTargets) {
+    patchAndroidManifestFile(filePath);
 }

@@ -44,10 +44,12 @@
       "cordova-plugin-file-transfer": {},
       "phonegap-plugin-barcodescanner": {
         "ANDROID_SUPPORT_V4_VERSION": "27.+"
-      }
+      },
+      "cordova-plugin-mlkit-barcode-scanner": {}
     }
   },
   "dependencies": {
+    "cordova-plugin-mlkit-barcode-scanner": "3.0.7",
     "qrcodejs2": "^0.0.2",
     "xlsx": "^0.18.5"
   }

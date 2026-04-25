@@ -41,11 +41,14 @@
             return;
         }
 
+        const mlKitScanner = app.getMlKitScanner();
         const nativeScanner = app.getNativeBarcodeScanner();
 
-        app.setText('scan-feedback', nativeScanner
-            ? 'Abrindo camera nativa para leitura...'
-            : 'Abrindo camera para leitura...');
+        app.setText('scan-feedback', mlKitScanner
+            ? 'Abrindo leitor rapido por ML Kit...'
+            : (nativeScanner
+                ? 'Abrindo camera nativa para leitura...'
+                : 'Abrindo camera para leitura...'));
         app.clearScanResult();
         app.setScannerUiActive(true);
 
@@ -77,6 +80,14 @@
 
     app.scanQrCode = function scanQrCode() {
         return new Promise((resolve, reject) => {
+            const mlKitScanner = app.getMlKitScanner();
+            if (mlKitScanner && typeof mlKitScanner.scan === 'function') {
+                app.scanWithMlKit(mlKitScanner)
+                    .then((value) => resolve(value))
+                    .catch((error) => reject(error));
+                return;
+            }
+
             const nativeScanner = app.getNativeBarcodeScanner();
 
             if (nativeScanner && typeof nativeScanner.scan === 'function') {
@@ -132,6 +143,60 @@
                     reject(error instanceof Error ? error : new Error(app.getScannerErrorMessage(error)));
                 });
         });
+    };
+
+    app.scanWithMlKit = function scanWithMlKit(scanner) {
+        return new Promise((resolve, reject) => {
+            scanner.scan({
+                barcodeFormats: {
+                    Code128: false,
+                    Code39: false,
+                    Code93: false,
+                    CodaBar: false,
+                    DataMatrix: false,
+                    EAN13: false,
+                    EAN8: false,
+                    ITF: false,
+                    QRCode: true,
+                    UPCA: false,
+                    UPCE: false,
+                    PDF417: false,
+                    Aztec: false
+                },
+                beepOnSuccess: false,
+                vibrateOnSuccess: false,
+                detectorSize: 0.92,
+                rotateCamera: false
+            }, (result) => {
+                const text = result && (result.text || result.data);
+                if (!text) {
+                    resolve('');
+                    return;
+                }
+
+                resolve(app.normalizeScannedHash(text));
+            }, (error) => {
+                if (app.isScannerCancelError(error)) {
+                    resolve('');
+                    return;
+                }
+
+                reject(new Error(app.getScannerErrorMessage(error)));
+            });
+        });
+    };
+
+    app.getMlKitScanner = function getMlKitScanner() {
+        if (!windowObject.cordova || !windowObject.cordova.plugins || !windowObject.cordova.plugins.mlkit) {
+            return null;
+        }
+
+        const scanner = windowObject.cordova.plugins.mlkit.barcodeScanner;
+        if (!scanner || typeof scanner.scan !== 'function') {
+            return null;
+        }
+
+        return scanner;
     };
 
     app.getNativeBarcodeScanner = function getNativeBarcodeScanner() {
@@ -274,11 +339,17 @@
     };
 
     app.isScannerCancelError = function isScannerCancelError(error) {
+        const message = String(
+            (error && (error.message || error.error)) || ''
+        ).toUpperCase();
+
         return Boolean(
             error && (
                 error.code === 6 ||
                 error.name === 'SCAN_CANCELED' ||
-                error.cancelled === true
+                error.cancelled === true ||
+                message.includes('USER_CANCELLED') ||
+                message.includes('CANCEL')
             )
         );
     };
