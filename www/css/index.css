@@ -72,13 +72,9 @@ body.startup-locked .app-shell {
     pointer-events: none;
 }
 
-.startup-card {
-    width: min(560px, 100%);
-    background: rgba(255, 255, 255, 0.84);
-    border: 1px solid rgba(19, 35, 27, 0.1);
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 24px 80px rgba(15, 64, 42, 0.18);
+.startup-content {
+    width: min(920px, 100%);
+    padding: 16px;
     text-align: center;
     animation: startup-rise 420ms ease-out both;
 }
@@ -105,42 +101,27 @@ body.startup-locked .app-shell {
 }
 
 .startup-logos {
-    margin-top: 22px;
+    margin-top: 26px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.startup-logo-block {
-    margin: 0;
-    border-radius: 16px;
-    border: 1px solid rgba(19, 35, 27, 0.08);
-    background: rgba(255, 255, 255, 0.86);
-    padding: 14px;
-    display: grid;
-    place-items: center;
-    gap: 10px;
+    align-items: center;
+    justify-items: center;
+    gap: 24px;
 }
 
 .startup-logo {
     width: 100%;
-    max-width: 170px;
-    height: 96px;
+    max-width: 340px;
+    height: 220px;
     object-fit: contain;
 }
 
 .startup-logo-monogram {
-    max-width: 150px;
+    max-width: 360px;
 }
 
 .startup-logo-cerimonial {
-    max-width: 170px;
-}
-
-.startup-logo-block figcaption {
-    font-size: 0.82rem;
-    color: #355b4a;
-    font-weight: 600;
+    max-width: 330px;
 }
 
 .startup-button {
@@ -1048,8 +1029,8 @@ button {
 }
 
 @media (max-width: 900px) {
-    .startup-card {
-        padding: 20px;
+    .startup-content {
+        padding: 10px;
     }
 
     .hero-card,
@@ -1071,10 +1052,12 @@ button {
 @media (max-width: 640px) {
     .startup-logos {
         grid-template-columns: 1fr;
+        gap: 12px;
     }
 
     .startup-logo {
-        height: 88px;
+        max-width: min(88vw, 420px);
+        height: 176px;
     }
 
     .app-shell {
