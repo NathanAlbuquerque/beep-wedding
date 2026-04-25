@@ -10,8 +10,29 @@
         <link rel="stylesheet" href="css/index.css">
         <title>Beep Wedding</title>
     </head>
-    <body>
-        <main class="app-shell">
+    <body class="startup-locked">
+        <section id="startup-screen" class="startup-screen" aria-label="Tela inicial do app">
+            <div class="startup-card">
+                <p class="startup-kicker">Bem-vindo</p>
+                <h1 class="startup-title">Beep Wedding</h1>
+                <p class="startup-subtitle">Credenciamento inteligente para o grande dia</p>
+
+                <div class="startup-logos" aria-label="Parceiros do evento">
+                    <figure class="startup-logo-block">
+                        <img class="startup-logo startup-logo-monogram" src="img/casamento.png" alt="Monograma dos noivos">
+                        <figcaption>Monograma dos noivos</figcaption>
+                    </figure>
+                    <figure class="startup-logo-block">
+                        <img class="startup-logo startup-logo-cerimonial" src="img/cerimonial.jpeg" alt="Logo do cerimonial">
+                        <figcaption>Cerimonial</figcaption>
+                    </figure>
+                </div>
+
+                <button id="start-app-button" class="startup-button" type="button">Iniciar</button>
+            </div>
+        </section>
+
+        <main class="app-shell" aria-hidden="true">
             <header class="topbar panel">
                 <div>
                     <p class="eyebrow">Controle de acesso do evento</p>

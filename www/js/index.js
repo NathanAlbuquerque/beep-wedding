@@ -13,7 +13,40 @@
         await app.boot();
     }
 
+    function hideStartupScreen() {
+        const startupScreen = document.getElementById('startup-screen');
+        const appShell = document.querySelector('.app-shell');
+
+        if (startupScreen) {
+            startupScreen.classList.add('is-hidden');
+            startupScreen.setAttribute('aria-hidden', 'true');
+        }
+
+        if (appShell) {
+            appShell.setAttribute('aria-hidden', 'false');
+        }
+
+        document.body.classList.remove('startup-locked');
+    }
+
+    function setupStartupScreen() {
+        const startButton = document.getElementById('start-app-button');
+
+        if (!startButton) {
+            hideStartupScreen();
+            return;
+        }
+
+        startButton.addEventListener('click', hideStartupScreen, { once: true });
+    }
+
+    document.addEventListener('DOMContentLoaded', setupStartupScreen, false);
+
     document.addEventListener('deviceready', () => {
+        if (windowObject.navigator && windowObject.navigator.splashscreen && typeof windowObject.navigator.splashscreen.hide === 'function') {
+            windowObject.navigator.splashscreen.hide();
+        }
+
         app.boot();
     }, false);
 

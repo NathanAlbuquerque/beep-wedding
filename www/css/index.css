@@ -43,6 +43,122 @@ body {
     scroll-behavior: smooth;
 }
 
+body.startup-locked {
+    overflow: hidden;
+}
+
+body.startup-locked .app-shell {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.startup-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background:
+        radial-gradient(circle at 10% 15%, rgba(255, 255, 255, 0.62), transparent 42%),
+        radial-gradient(circle at 84% 82%, rgba(17, 138, 87, 0.26), transparent 45%),
+        linear-gradient(145deg, #e8f7ee 0%, #d5ebde 52%, #cce2d5 100%);
+    transition: opacity var(--transition-medium), visibility var(--transition-medium);
+}
+
+.startup-screen.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.startup-card {
+    width: min(560px, 100%);
+    background: rgba(255, 255, 255, 0.84);
+    border: 1px solid rgba(19, 35, 27, 0.1);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 24px 80px rgba(15, 64, 42, 0.18);
+    text-align: center;
+    animation: startup-rise 420ms ease-out both;
+}
+
+.startup-kicker {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+    color: #2f6f53;
+    font-weight: 700;
+}
+
+.startup-title {
+    margin: 6px 0 0;
+    font-size: clamp(2rem, 7vw, 2.8rem);
+    line-height: 1;
+}
+
+.startup-subtitle {
+    margin: 12px auto 0;
+    max-width: 34ch;
+    color: #355b4a;
+}
+
+.startup-logos {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.startup-logo-block {
+    margin: 0;
+    border-radius: 16px;
+    border: 1px solid rgba(19, 35, 27, 0.08);
+    background: rgba(255, 255, 255, 0.86);
+    padding: 14px;
+    display: grid;
+    place-items: center;
+    gap: 10px;
+}
+
+.startup-logo {
+    width: 100%;
+    max-width: 170px;
+    height: 96px;
+    object-fit: contain;
+}
+
+.startup-logo-monogram {
+    max-width: 150px;
+}
+
+.startup-logo-cerimonial {
+    max-width: 170px;
+}
+
+.startup-logo-block figcaption {
+    font-size: 0.82rem;
+    color: #355b4a;
+    font-weight: 600;
+}
+
+.startup-button {
+    margin-top: 20px;
+    width: min(320px, 100%);
+    min-height: 48px;
+    border-radius: 14px;
+    font-weight: 700;
+    color: #f5fff9;
+    background: linear-gradient(180deg, #19a76a, #0d7b4c);
+    box-shadow: 0 12px 24px rgba(17, 138, 87, 0.2);
+    cursor: pointer;
+}
+
+.startup-button:active {
+    transform: translateY(1px);
+}
+
 body.scanner-active {
     background: transparent !important;
 }
@@ -803,6 +919,8 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .startup-screen,
+    .startup-card,
     .qr-modal,
     .qr-modal-backdrop,
     .qr-modal-card,
@@ -891,6 +1009,10 @@ button {
 }
 
 @media (max-width: 900px) {
+    .startup-card {
+        padding: 20px;
+    }
+
     .hero-card,
     .panel-grid,
     .roadmap {
@@ -908,6 +1030,14 @@ button {
 }
 
 @media (max-width: 640px) {
+    .startup-logos {
+        grid-template-columns: 1fr;
+    }
+
+    .startup-logo {
+        height: 88px;
+    }
+
     .app-shell {
         width: min(100% - 16px, 1120px);
         padding: 12px 0 92px;
@@ -1026,5 +1156,17 @@ button {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes startup-rise {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
