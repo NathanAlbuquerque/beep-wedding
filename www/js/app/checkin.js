@@ -36,6 +36,24 @@
         });
     };
 
+    app.getScannerProfile = function getScannerProfile() {
+        const profile = app.config && app.config.scannerProfile
+            ? app.config.scannerProfile
+            : {};
+
+        return {
+            name: String(profile.name || 'queue-safe-native'),
+            strategy: String(profile.strategy || 'native-first').toLowerCase(),
+            mlKitDetectorSize: Number(profile.mlKitDetectorSize) > 0 ? Number(profile.mlKitDetectorSize) : 0.78,
+            mlKitRotateCamera: Boolean(profile.mlKitRotateCamera),
+            mlKitVibrateOnSuccess: Boolean(profile.mlKitVibrateOnSuccess),
+            mlKitBeepOnSuccess: Boolean(profile.mlKitBeepOnSuccess),
+            nativeShowTorchButton: profile.nativeShowTorchButton !== false,
+            nativeDisableSuccessBeep: profile.nativeDisableSuccessBeep !== false,
+            nativeDisableAnimations: profile.nativeDisableAnimations !== false
+        };
+    };
+
     app.startQrScan = async function startQrScan() {
         if (app.state.scannerActive) {
             return;
@@ -43,12 +61,13 @@
 
         const mlKitScanner = app.getMlKitScanner();
         const nativeScanner = app.getNativeBarcodeScanner();
+        const profile = app.getScannerProfile();
 
-        app.showToast(mlKitScanner
-            ? 'Abrindo leitor rapido por ML Kit...'
-            : (nativeScanner
-                ? 'Abrindo camera nativa para leitura...'
-            : 'Abrindo camera para leitura...'));
+        app.showToast(nativeScanner
+            ? `Abrindo camera nativa (${profile.name})...`
+            : (mlKitScanner
+                ? `Abrindo leitor por ML Kit (${profile.name})...`
+                : 'Abrindo camera para leitura...'));
         app.clearScanResult();
         app.setScannerUiActive(true);
 
@@ -79,43 +98,153 @@
     };
 
     app.scanQrCode = function scanQrCode() {
+        const profile = app.getScannerProfile();
+        const strategy = profile.strategy === 'mlkit-first' ? 'mlkit-first' : 'native-first';
+
+        const orderedAttempts = strategy === 'mlkit-first'
+            ? ['mlkit', 'native', 'legacy']
+            : ['native', 'mlkit', 'legacy'];
+
+        let lastError = null;
+
+        return orderedAttempts.reduce((promiseChain, attemptName) => {
+            return promiseChain.then((result) => {
+                if (result && result.found) {
+                    return result;
+                }
+
+                if (result && result.cancelled) {
+                    return result;
+                }
+
+                const runner = attemptName === 'native'
+                    ? app.scanWithNativeBarcode
+                    : attemptName === 'mlkit'
+                        ? app.scanWithMlKit
+                        : app.scanWithLegacyQrScanner;
+
+                return runner()
+                    .then((value) => {
+                        if (value === '') {
+                            return { found: false, cancelled: true, value: '' };
+                        }
+
+                        if (!value) {
+                            return { found: false, cancelled: false, value: '' };
+                        }
+
+                        return { found: true, cancelled: false, value };
+                    })
+                    .catch((error) => {
+                        if (app.isScannerCancelError(error)) {
+                            return { found: false, cancelled: true, value: '' };
+                        }
+
+                        lastError = error;
+                        return { found: false, cancelled: false, value: '' };
+                    });
+            });
+        }, Promise.resolve({ found: false, cancelled: false, value: '' }))
+            .then((finalResult) => {
+                if (finalResult.cancelled) {
+                    return '';
+                }
+
+                if (finalResult.found) {
+                    return finalResult.value;
+                }
+
+                throw (lastError || new Error('Nao foi possivel ler o QR Code com os leitores disponiveis.'));
+            });
+    };
+
+    app.scanWithNativeBarcode = function scanWithNativeBarcode() {
         return new Promise((resolve, reject) => {
-            const mlKitScanner = app.getMlKitScanner();
-            if (mlKitScanner && typeof mlKitScanner.scan === 'function') {
-                app.scanWithMlKit(mlKitScanner)
-                    .then((value) => resolve(value))
-                    .catch((error) => reject(error));
-                return;
-            }
-
             const nativeScanner = app.getNativeBarcodeScanner();
+            const profile = app.getScannerProfile();
 
-            if (nativeScanner && typeof nativeScanner.scan === 'function') {
-                nativeScanner.scan((result) => {
-                    if (!result || result.cancelled) {
-                        resolve('');
-                        return;
-                    }
-
-                    resolve(app.normalizeScannedHash(result.text || result.data || ''));
-                }, (error) => {
-                    reject(new Error(app.getScannerErrorMessage(error)));
-                }, {
-                    preferFrontCamera: false,
-                    showFlipCameraButton: false,
-                    showTorchButton: true,
-                    disableSuccessBeep: true,
-                    prompt: 'Aponte a camera para o QR Code do convidado',
-                    formats: 'QR_CODE',
-                    resultDisplayDuration: 0
-                });
+            if (!nativeScanner || typeof nativeScanner.scan !== 'function') {
+                reject(new Error('Leitor nativo indisponivel.'));
                 return;
             }
 
+            nativeScanner.scan((result) => {
+                if (!result || result.cancelled) {
+                    resolve('');
+                    return;
+                }
+
+                const normalized = app.normalizeScannedHash(result.text || result.data || '');
+                resolve(normalized || null);
+            }, (error) => {
+                reject(new Error(app.getScannerErrorMessage(error)));
+            }, {
+                preferFrontCamera: false,
+                showFlipCameraButton: false,
+                showTorchButton: profile.nativeShowTorchButton,
+                disableSuccessBeep: profile.nativeDisableSuccessBeep,
+                disableAnimations: profile.nativeDisableAnimations,
+                prompt: 'Aponte a camera para o QR Code do convidado',
+                formats: 'QR_CODE',
+                resultDisplayDuration: 0
+            });
+        });
+    };
+
+    app.scanWithMlKit = function scanWithMlKit() {
+        return new Promise((resolve, reject) => {
+            const scanner = app.getMlKitScanner();
+            if (!scanner || typeof scanner.scan !== 'function') {
+                reject(new Error('Leitor ML Kit indisponivel.'));
+                return;
+            }
+
+            const profile = app.getScannerProfile();
+            scanner.scan({
+                barcodeFormats: {
+                    Code128: false,
+                    Code39: false,
+                    Code93: false,
+                    CodaBar: false,
+                    DataMatrix: false,
+                    EAN13: false,
+                    EAN8: false,
+                    ITF: false,
+                    QRCode: true,
+                    UPCA: false,
+                    UPCE: false,
+                    PDF417: false,
+                    Aztec: false
+                },
+                beepOnSuccess: profile.mlKitBeepOnSuccess,
+                vibrateOnSuccess: profile.mlKitVibrateOnSuccess,
+                detectorSize: profile.mlKitDetectorSize,
+                rotateCamera: profile.mlKitRotateCamera
+            }, (result) => {
+                const text = result && (result.text || result.data);
+                if (!text) {
+                    resolve(null);
+                    return;
+                }
+
+                resolve(app.normalizeScannedHash(text));
+            }, (error) => {
+                if (app.isScannerCancelError(error)) {
+                    resolve('');
+                    return;
+                }
+
+                reject(new Error(app.getScannerErrorMessage(error)));
+            });
+        });
+    };
+
+    app.scanWithLegacyQrScanner = function scanWithLegacyQrScanner() {
+        return new Promise((resolve, reject) => {
             const scanner = windowObject.QRScanner;
 
             if (!scanner || typeof scanner.prepare !== 'function' || typeof scanner.scan !== 'function') {
-                reject(new Error('Nenhum plugin de scanner esta disponivel neste dispositivo.'));
+                reject(new Error('Leitor legado indisponivel.'));
                 return;
             }
 
@@ -142,47 +271,6 @@
                     app.hideQrScanner();
                     reject(error instanceof Error ? error : new Error(app.getScannerErrorMessage(error)));
                 });
-        });
-    };
-
-    app.scanWithMlKit = function scanWithMlKit(scanner) {
-        return new Promise((resolve, reject) => {
-            scanner.scan({
-                barcodeFormats: {
-                    Code128: false,
-                    Code39: false,
-                    Code93: false,
-                    CodaBar: false,
-                    DataMatrix: false,
-                    EAN13: false,
-                    EAN8: false,
-                    ITF: false,
-                    QRCode: true,
-                    UPCA: false,
-                    UPCE: false,
-                    PDF417: false,
-                    Aztec: false
-                },
-                beepOnSuccess: false,
-                vibrateOnSuccess: false,
-                detectorSize: 0.92,
-                rotateCamera: false
-            }, (result) => {
-                const text = result && (result.text || result.data);
-                if (!text) {
-                    resolve('');
-                    return;
-                }
-
-                resolve(app.normalizeScannedHash(text));
-            }, (error) => {
-                if (app.isScannerCancelError(error)) {
-                    resolve('');
-                    return;
-                }
-
-                reject(new Error(app.getScannerErrorMessage(error)));
-            });
         });
     };
 

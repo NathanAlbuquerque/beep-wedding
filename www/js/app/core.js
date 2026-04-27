@@ -12,7 +12,18 @@
     };
 
     app.config = app.config || {
-        eventName: String(configuredEventName || '').trim() || 'Casamento Denyse & Nathan'
+        eventName: String(configuredEventName || '').trim() || 'Casamento Denyse & Nathan',
+        scannerProfile: {
+            name: 'queue-safe-native',
+            strategy: 'native-first',
+            mlKitDetectorSize: 0.78,
+            mlKitRotateCamera: false,
+            mlKitVibrateOnSuccess: false,
+            mlKitBeepOnSuccess: false,
+            nativeShowTorchButton: true,
+            nativeDisableSuccessBeep: true,
+            nativeDisableAnimations: true
+        }
     };
 
     app.setText = function setText(elementId, value) {
