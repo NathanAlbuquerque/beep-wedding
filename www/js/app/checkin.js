@@ -530,9 +530,16 @@
             app.state.selectedGuest = updatedGuest;
             app.renderScanSuccess(updatedGuest);
             app.showToast(successMessage, 'success');
+            app.appendHistoryEntry({
+                nome: updatedGuest.nome,
+                hash: updatedGuest.hash,
+                status: nextStatus,
+                time: new Date().toISOString()
+            });
 
             await app.refreshSummary();
             await app.refreshGuestList();
+            await app.refreshHistory();
 
             windowObject.setTimeout(() => {
                 app.clearScanResult();

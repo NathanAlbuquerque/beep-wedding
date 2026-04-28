@@ -396,10 +396,61 @@ button {
     margin-bottom: 16px;
 }
 
+.guest-list-panel .panel-heading > div:first-child {
+    display: grid;
+    gap: 10px;
+}
+
 .action-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+.guest-actions {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.guest-tools-dropdown {
+    position: relative;
+}
+
+.guest-tools-dropdown summary {
+    list-style: none;
+}
+
+.guest-tools-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.guest-tools-trigger {
+    min-width: 148px;
+}
+
+.guest-tools-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 8;
+    display: grid;
+    gap: 10px;
+    min-width: 220px;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(18, 52, 37, 0.12);
+    box-shadow: 0 18px 44px rgba(31, 93, 65, 0.14);
+}
+
+.guest-tools-menu .action-button {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.guest-tools-dropdown:not([open]) .guest-tools-menu {
+    display: none;
 }
 
 .action-button {
@@ -434,8 +485,8 @@ button {
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 1rem;
-    height: 1rem;
+    width: 1.2rem;
+    height: 1.2rem;
 }
 
 .button-icon svg {
@@ -443,9 +494,14 @@ button {
     height: 100%;
     fill: none;
     stroke: currentColor;
-    stroke-width: 2;
+    stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+.action-button .button-icon {
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .action-grid .action-button {
@@ -544,6 +600,10 @@ button {
     font-size: 0.92rem;
 }
 
+.guest-search-inline {
+    width: min(100%, 420px);
+}
+
 .guest-block-list {
     display: grid;
     gap: 12px;
@@ -596,23 +656,23 @@ button {
 }
 
 .status-ausente {
-    color: #2f6f4e;
-    background: rgba(112, 176, 139, 0.24);
+    color: #8a1f25;
+    background: rgba(226, 82, 93, 0.18);
 }
 
 .status-presente {
-    color: #0a5f36;
-    background: rgba(55, 170, 112, 0.24);
+    color: #8a1f25;
+    background: rgba(226, 82, 93, 0.18);
 }
 
 .status-saiu {
-    color: #1d5e45;
-    background: rgba(95, 152, 121, 0.24);
+    color: #0f4f8a;
+    background: rgba(84, 147, 229, 0.2);
 }
 
 .guest-block-field {
-    display: grid;
-    gap: 6px;
+    color: #7a5a00;
+    background: rgba(242, 194, 82, 0.24);
     min-width: 0;
 }
 
@@ -639,6 +699,12 @@ button {
 .guest-block-value-status {
     display: inline-flex;
     align-items: center;
+}
+
+.guest-block-meta {
+    color: var(--muted);
+    font-weight: 600;
+    text-align: right;
 }
 
 .guest-block-empty {
@@ -1051,6 +1117,21 @@ button {
     .qr-content {
         grid-template-columns: 1fr;
     }
+
+    .panel-heading {
+        flex-direction: column;
+    }
+
+    .guest-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .guest-tools-menu {
+        right: auto;
+        left: 0;
+        min-width: min(92vw, 280px);
+    }
 }
 
 @media (max-width: 640px) {
@@ -1159,6 +1240,11 @@ button {
     .qr-actions .action-button {
         width: 100%;
         min-width: 0;
+    }
+
+    .guest-tools-trigger {
+        min-width: 0;
+        width: 100%;
     }
 
     .qr-modal-card {

@@ -124,10 +124,32 @@
                 <section class="panel guest-list-panel">
                     <div class="panel-heading">
                         <div>
-                            <h2>Ultimos registros</h2>
+                            <h2>Convidados cadastrados</h2>
+                            <input class="field-input field-input-search guest-search-inline" id="guest-search" type="search" placeholder="Buscar por nome...">
                         </div>
-                        <div class="guest-list-tools">
-                            <input class="field-input field-input-search" id="guest-search" type="search" placeholder="Buscar por nome...">
+                        <div class="guest-actions">
+                            <details class="guest-tools-dropdown">
+                                <summary class="action-button action-button-primary guest-tools-trigger">
+                                    <span class="button-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+                                    </span>
+                                    <span>Planilha</span>
+                                </summary>
+                                <div class="guest-tools-menu" role="menu">
+                                    <button class="action-button" type="button" data-export-guests>
+                                        <span class="button-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
+                                        </span>
+                                        <span>Exportar dados</span>
+                                    </button>
+                                    <button class="action-button" type="button" data-open-import-modal>
+                                        <span class="button-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
+                                        </span>
+                                        <span>Importar planilha</span>
+                                    </button>
+                                </div>
+                            </details>
                         </div>
                     </div>
                     <div id="guest-list-body" class="guest-block-list" aria-live="polite"></div>

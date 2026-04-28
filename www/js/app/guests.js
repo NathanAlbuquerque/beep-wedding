@@ -29,11 +29,17 @@
         }
 
         if (importButton) {
-            importButton.addEventListener('click', app.handleImportGuests);
+            importButton.addEventListener('click', (event) => {
+                app.handleImportGuests(event);
+                app.closeGuestToolsDropdown();
+            });
         }
 
         if (exportButton) {
-            exportButton.addEventListener('click', app.handleExportGuests);
+            exportButton.addEventListener('click', () => {
+                app.handleExportGuests();
+                app.closeGuestToolsDropdown();
+            });
         }
 
         if (searchInput) {
@@ -81,6 +87,13 @@
                     app.closeImportModal();
                 }
             });
+        }
+    };
+
+    app.closeGuestToolsDropdown = function closeGuestToolsDropdown() {
+        const dropdown = document.querySelector('.guest-tools-dropdown[open]');
+        if (dropdown) {
+            dropdown.removeAttribute('open');
         }
     };
 

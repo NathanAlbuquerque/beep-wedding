@@ -7,6 +7,7 @@
         summaryTimer: null,
         currentGuests: [],
         selectedGuest: null,
+        historyLog: [],
         scannerActive: false,
         toastTimer: null
     };
@@ -119,17 +120,56 @@
         }
     };
 
+    app.getHistoryStorageKey = function getHistoryStorageKey() {
+        return 'beepWeddingHistoryLog';
+    };
+
+    app.loadHistoryLog = function loadHistoryLog() {
+        try {
+            const raw = windowObject.localStorage.getItem(app.getHistoryStorageKey());
+            const parsed = raw ? JSON.parse(raw) : [];
+            app.state.historyLog = Array.isArray(parsed) ? parsed : [];
+        } catch (_error) {
+            app.state.historyLog = [];
+        }
+
+        return app.state.historyLog;
+    };
+
+    app.saveHistoryLog = function saveHistoryLog() {
+        try {
+            windowObject.localStorage.setItem(app.getHistoryStorageKey(), JSON.stringify(app.state.historyLog || []));
+        } catch (_error) {
+            // ignore storage errors
+        }
+    };
+
+    app.appendHistoryEntry = function appendHistoryEntry(entry) {
+        const nextEntry = {
+            nome: String(entry && entry.nome ? entry.nome : ''),
+            hash: String(entry && entry.hash ? entry.hash : ''),
+            status: String(entry && entry.status ? entry.status : ''),
+            time: String(entry && entry.time ? entry.time : new Date().toISOString())
+        };
+
+        app.state.historyLog = Array.isArray(app.state.historyLog) ? app.state.historyLog : [];
+        app.state.historyLog.unshift(nextEntry);
+        app.state.historyLog = app.state.historyLog.slice(0, 100);
+        app.saveHistoryLog();
+    };
+
     app.refreshHistory = async function refreshHistory() {
         const container = document.getElementById('history-list');
-        if (!container || !windowObject.BeepWeddingDatabase) {
+        if (!container) {
             return;
         }
 
-        const guests = await windowObject.BeepWeddingDatabase.listGuests(500);
-        const records = (guests || [])
-            .map((g) => ({ nome: g.nome || '', status: g.status || '', time: g.data_checkin || g.data_saida || '' }))
-            .filter((r) => r.time)
-            .sort((a, b) => (new Date(b.time)).getTime() - (new Date(a.time)).getTime())
+        if (!Array.isArray(app.state.historyLog) || app.state.historyLog.length === 0) {
+            app.loadHistoryLog();
+        }
+
+        const records = (app.state.historyLog || [])
+            .filter((r) => r && r.time)
             .slice(0, 50);
 
         if (records.length === 0) {
@@ -166,6 +206,7 @@
     app.initializeBaseState = async function initializeBaseState() {
         app.setStatus('Preparando armazenamento local...');
         app.applyEventTitle();
+        app.loadHistoryLog();
 
         if (windowObject.BeepWeddingDatabase) {
             await windowObject.BeepWeddingDatabase.initialize();
