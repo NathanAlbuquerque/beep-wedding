@@ -37,20 +37,11 @@
     };
 
     app.getScannerProfile = function getScannerProfile() {
-        const profile = app.config && app.config.scannerProfile
-            ? app.config.scannerProfile
-            : {};
-
         return {
-            name: String(profile.name || 'queue-safe-native'),
-            strategy: String(profile.strategy || 'native-first').toLowerCase(),
-            mlKitDetectorSize: Number(profile.mlKitDetectorSize) > 0 ? Number(profile.mlKitDetectorSize) : 0.78,
-            mlKitRotateCamera: Boolean(profile.mlKitRotateCamera),
-            mlKitVibrateOnSuccess: Boolean(profile.mlKitVibrateOnSuccess),
-            mlKitBeepOnSuccess: Boolean(profile.mlKitBeepOnSuccess),
-            nativeShowTorchButton: profile.nativeShowTorchButton !== false,
-            nativeDisableSuccessBeep: profile.nativeDisableSuccessBeep !== false,
-            nativeDisableAnimations: profile.nativeDisableAnimations !== false
+            name: 'native-only',
+            nativeShowTorchButton: true,
+            nativeDisableSuccessBeep: true,
+            nativeDisableAnimations: true
         };
     };
 
@@ -59,15 +50,12 @@
             return;
         }
 
-        const mlKitScanner = app.getMlKitScanner();
         const nativeScanner = app.getNativeBarcodeScanner();
         const profile = app.getScannerProfile();
 
         app.showToast(nativeScanner
             ? `Abrindo camera nativa (${profile.name})...`
-            : (mlKitScanner
-                ? `Abrindo leitor por ML Kit (${profile.name})...`
-                : 'Abrindo camera para leitura...'));
+            : 'Abrindo camera para leitura...');
         app.clearScanResult();
         app.setScannerUiActive(true);
 
@@ -98,12 +86,7 @@
     };
 
     app.scanQrCode = function scanQrCode() {
-        const profile = app.getScannerProfile();
-        const strategy = profile.strategy === 'mlkit-first' ? 'mlkit-first' : 'native-first';
-
-        const orderedAttempts = strategy === 'mlkit-first'
-            ? ['mlkit', 'native', 'legacy']
-            : ['native', 'mlkit', 'legacy'];
+        const orderedAttempts = ['native', 'legacy'];
 
         let lastError = null;
 
@@ -191,54 +174,6 @@
         });
     };
 
-    app.scanWithMlKit = function scanWithMlKit() {
-        return new Promise((resolve, reject) => {
-            const scanner = app.getMlKitScanner();
-            if (!scanner || typeof scanner.scan !== 'function') {
-                reject(new Error('Leitor ML Kit indisponivel.'));
-                return;
-            }
-
-            const profile = app.getScannerProfile();
-            scanner.scan({
-                barcodeFormats: {
-                    Code128: false,
-                    Code39: false,
-                    Code93: false,
-                    CodaBar: false,
-                    DataMatrix: false,
-                    EAN13: false,
-                    EAN8: false,
-                    ITF: false,
-                    QRCode: true,
-                    UPCA: false,
-                    UPCE: false,
-                    PDF417: false,
-                    Aztec: false
-                },
-                beepOnSuccess: profile.mlKitBeepOnSuccess,
-                vibrateOnSuccess: profile.mlKitVibrateOnSuccess,
-                detectorSize: profile.mlKitDetectorSize,
-                rotateCamera: profile.mlKitRotateCamera
-            }, (result) => {
-                const text = result && (result.text || result.data);
-                if (!text) {
-                    resolve(null);
-                    return;
-                }
-
-                resolve(app.normalizeScannedHash(text));
-            }, (error) => {
-                if (app.isScannerCancelError(error)) {
-                    resolve('');
-                    return;
-                }
-
-                reject(new Error(app.getScannerErrorMessage(error)));
-            });
-        });
-    };
-
     app.scanWithLegacyQrScanner = function scanWithLegacyQrScanner() {
         return new Promise((resolve, reject) => {
             const scanner = windowObject.QRScanner;
@@ -272,19 +207,6 @@
                     reject(error instanceof Error ? error : new Error(app.getScannerErrorMessage(error)));
                 });
         });
-    };
-
-    app.getMlKitScanner = function getMlKitScanner() {
-        if (!windowObject.cordova || !windowObject.cordova.plugins || !windowObject.cordova.plugins.mlkit) {
-            return null;
-        }
-
-        const scanner = windowObject.cordova.plugins.mlkit.barcodeScanner;
-        if (!scanner || typeof scanner.scan !== 'function') {
-            return null;
-        }
-
-        return scanner;
     };
 
     app.getNativeBarcodeScanner = function getNativeBarcodeScanner() {
@@ -611,6 +533,10 @@
 
             await app.refreshSummary();
             await app.refreshGuestList();
+
+            windowObject.setTimeout(() => {
+                app.clearScanResult();
+            }, 1600);
         } catch (_error) {
             app.showToast('Nao foi possivel atualizar o status do convidado.', 'error');
         }

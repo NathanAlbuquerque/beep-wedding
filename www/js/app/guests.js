@@ -10,6 +10,7 @@
         const tableBody = document.getElementById('guest-list-body');
         const qrModal = document.getElementById('qr-modal');
         const importModal = document.getElementById('import-modal');
+        const exportButton = document.querySelector('[data-export-guests]');
 
         document.querySelectorAll('[data-modal-close]').forEach((button) => {
             button.addEventListener('click', app.closeQrModal);
@@ -29,6 +30,10 @@
 
         if (importButton) {
             importButton.addEventListener('click', app.handleImportGuests);
+        }
+
+        if (exportButton) {
+            exportButton.addEventListener('click', app.handleExportGuests);
         }
 
         if (searchInput) {
@@ -557,6 +562,53 @@
         } catch (_error) {
             app.setText('qr-feedback', 'Nao foi possivel compartilhar o QR Code.');
         }
+    };
+
+    app.handleExportGuests = async function handleExportGuests() {
+        if (!windowObject.BeepWeddingDatabase) {
+            app.showToast('Base de dados indisponivel.', 'error');
+            return;
+        }
+
+        try {
+            const allGuests = await windowObject.BeepWeddingDatabase.listGuests(9999);
+            if (!allGuests || allGuests.length === 0) {
+                app.showToast('Nenhum convidado cadastrado para exportar.', 'error');
+                return;
+            }
+
+            const csv = app.buildGuestsCsv(allGuests);
+            const fileName = `beep-wedding-convidados-${new Date().toISOString().split('T')[0]}.csv`;
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            app.showToast(`${allGuests.length} convidados exportados com sucesso.`, 'success');
+        } catch (_error) {
+            app.showToast('Nao foi possivel exportar os convidados.', 'error');
+        }
+    };
+
+    app.buildGuestsCsv = function buildGuestsCsv(guests) {
+        const header = ['Nome', 'Hash', 'Status', 'Data de Check-in'];
+        const rows = guests.map((guest) => [
+            String(guest.nome || '').replace(/"/g, '""'),
+            String(guest.hash || ''),
+            String(guest.status || 'Ausente'),
+            String(guest.data_checkin || '')
+        ]);
+
+        const allRows = [header, ...rows];
+        return allRows
+            .map((row) => row.map((cell) => `"${cell}"`).join(','))
+            .join('\n');
     };
 
     windowObject.BeepWeddingApp = app;
