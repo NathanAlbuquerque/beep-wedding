@@ -93,20 +93,27 @@
                             <div>
                                 <h2>Novo convidado</h2>
                             </div>
-                            <div class="action-grid">
-                                <button class="action-button" type="button" data-export-guests>
+                            <details class="guest-tools-dropdown">
+                                <summary class="action-button action-button-primary guest-tools-trigger" aria-label="Acoes da planilha">
                                     <span class="button-icon" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
+                                        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="12" cy="19" r="1.6"></circle></svg>
                                     </span>
-                                    <span>Exportar dados</span>
-                                </button>
-                                <button class="action-button" type="button" data-open-import-modal>
-                                    <span class="button-icon" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
-                                    </span>
-                                    <span>Importar planilha</span>
-                                </button>
-                            </div>
+                                </summary>
+                                <div class="guest-tools-menu" role="menu">
+                                    <button class="action-button" type="button" data-export-guests>
+                                        <span class="button-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
+                                        </span>
+                                        <span>Exportar dados</span>
+                                    </button>
+                                    <button class="action-button" type="button" data-open-import-modal>
+                                        <span class="button-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
+                                        </span>
+                                        <span>Importar planilha</span>
+                                    </button>
+                                </div>
+                            </details>
                         </div>
                         <form id="guest-form" class="stack-form">
                             <input class="field-input" id="guest-name" name="nome" type="text" placeholder="Nome do convidado" required>
@@ -126,30 +133,6 @@
                         <div>
                             <h2>Convidados cadastrados</h2>
                             <input class="field-input field-input-search guest-search-inline" id="guest-search" type="search" placeholder="Buscar por nome...">
-                        </div>
-                        <div class="guest-actions">
-                            <details class="guest-tools-dropdown">
-                                <summary class="action-button action-button-primary guest-tools-trigger">
-                                    <span class="button-icon" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
-                                    </span>
-                                    <span>Planilha</span>
-                                </summary>
-                                <div class="guest-tools-menu" role="menu">
-                                    <button class="action-button" type="button" data-export-guests>
-                                        <span class="button-icon" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
-                                        </span>
-                                        <span>Exportar dados</span>
-                                    </button>
-                                    <button class="action-button" type="button" data-open-import-modal>
-                                        <span class="button-icon" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24"><path d="M12 3v9m0 0 3-3m-3 3-3-3M5 14v4h14v-4"></path></svg>
-                                        </span>
-                                        <span>Importar planilha</span>
-                                    </button>
-                                </div>
-                            </details>
                         </div>
                     </div>
                     <div id="guest-list-body" class="guest-block-list" aria-live="polite"></div>
@@ -230,7 +213,6 @@
                 <div class="qr-content qr-content-modal">
                     <div class="qr-stage" id="guest-qr-code"></div>
                     <div class="qr-meta">
-                        <p class="hero-text">QR do convite pronto para compartilhar ou baixar.</p>
                         <div class="qr-actions">
                             <button id="download-qr-button" class="action-button" type="button" disabled>
                                 <span class="button-icon" aria-hidden="true">
@@ -245,7 +227,6 @@
                                 <span>Compartilhar</span>
                             </button>
                         </div>
-                        <p id="qr-feedback" class="inline-feedback" aria-live="polite"></p>
                     </div>
                 </div>
             </section>

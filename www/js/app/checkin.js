@@ -470,7 +470,7 @@
         }
 
         app.showToast('Convidado nao encontrado, por favor leia o QR Code novamente.', 'error');
-        app.setText('scan-result-title', 'QR invalido ou nao cadastrado');
+        app.setText('scan-result-title', 'Convidado encontrado');
         app.setText('scan-guest-name', '-');
         app.setText('scan-guest-status', '-');
     };

@@ -355,7 +355,7 @@
     app.selectGuestForQr = function selectGuestForQr(hash) {
         const selected = app.state.currentGuests.find((guest) => String(guest.hash) === String(hash));
         if (!selected) {
-            app.setText('qr-feedback', 'Convidado nao encontrado para gerar QR Code.');
+            app.showToast('Convidado nao encontrado para gerar QR Code.', 'error');
             return;
         }
 
@@ -406,7 +406,7 @@
         const shareButton = document.getElementById('share-qr-button');
 
         if (!qrContainer || !windowObject.QRCode) {
-            app.setText('qr-feedback', 'Biblioteca QRCode indisponivel.');
+            app.showToast('Biblioteca QRCode indisponivel.', 'error');
             return;
         }
 
@@ -414,7 +414,7 @@
         try {
             payload = app.buildQrPayload(guest.hash);
         } catch (_error) {
-            app.setText('qr-feedback', 'Nao foi possivel gerar QR Code: hash invalido.');
+            app.showToast('Nao foi possivel gerar QR Code: hash invalido.', 'error');
             return;
         }
 
@@ -429,7 +429,7 @@
         });
 
         if (!app.validateQrRender(qrContainer)) {
-            app.setText('qr-feedback', 'Falha na renderizacao do QR Code.');
+            app.showToast('Falha na renderizacao do QR Code.', 'error');
             return;
         }
 
@@ -452,7 +452,7 @@
             qrModal.setAttribute('aria-hidden', 'false');
         }
 
-        app.setText('qr-feedback', 'QR Code gerado com sucesso.');
+        app.showToast('QR Code gerado com sucesso.', 'success');
     };
 
     app.closeQrModal = function closeQrModal() {
@@ -491,7 +491,6 @@
             qrTitle.textContent = 'Selecione um convidado';
         }
 
-        app.setText('qr-feedback', '');
     };
 
     app.getQrImageDataUrl = function getQrImageDataUrl() {
@@ -515,13 +514,13 @@
 
     app.handleDownloadQr = function handleDownloadQr() {
         if (!app.state.selectedGuest) {
-            app.setText('qr-feedback', 'Selecione um convidado antes de baixar o QR.');
+            app.showToast('Selecione um convidado antes de baixar o QR.', 'error');
             return;
         }
 
         const dataUrl = app.getQrImageDataUrl();
         if (!dataUrl) {
-            app.setText('qr-feedback', 'Nao foi possivel gerar a imagem para download.');
+            app.showToast('Nao foi possivel gerar a imagem para download.', 'error');
             return;
         }
 
@@ -620,7 +619,7 @@
 
     app.handleShareQr = async function handleShareQr() {
         if (!app.state.selectedGuest) {
-            app.setText('qr-feedback', 'Selecione um convidado antes de compartilhar.');
+            app.showToast('Selecione um convidado antes de compartilhar.', 'error');
             return;
         }
 
@@ -641,7 +640,7 @@
                     );
                 });
 
-                app.setText('qr-feedback', 'Compartilhamento enviado com sucesso.');
+                app.showToast('Compartilhamento enviado com sucesso.', 'success');
                 return;
             }
 
@@ -650,13 +649,13 @@
                     title: 'Convite Beep Wedding',
                     text: shareMessage
                 });
-                app.setText('qr-feedback', 'Compartilhamento enviado com sucesso.');
+                app.showToast('Compartilhamento enviado com sucesso.', 'success');
                 return;
             }
 
-            app.setText('qr-feedback', 'Compartilhamento indisponivel neste dispositivo.');
+            app.showToast('Compartilhamento indisponivel neste dispositivo.', 'error');
         } catch (_error) {
-            app.setText('qr-feedback', 'Nao foi possivel compartilhar o QR Code.');
+            app.showToast('Nao foi possivel compartilhar o QR Code.', 'error');
         }
     };
 
