@@ -373,8 +373,8 @@
             throw new Error('Hash invalido para gerar QR Code.');
         }
 
-        // URL payload improves readability in native camera apps and scanner interoperability.
-        return `https://beepwedding.app/invite?hash=${encodeURIComponent(normalized)}`;
+        // Keep the payload short so the QR stays less dense and easier to read quickly.
+        return normalized;
     };
 
     app.validateQrRender = function validateQrRender(container) {
@@ -421,8 +421,8 @@
         qrContainer.innerHTML = '';
         new windowObject.QRCode(qrContainer, {
             text: payload,
-            width: 220,
-            height: 220,
+            width: 300,
+            height: 300,
             colorDark: '#111111',
             colorLight: '#ffffff',
             correctLevel: windowObject.QRCode.CorrectLevel.H
