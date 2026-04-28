@@ -513,13 +513,96 @@
         }
 
         const fileName = `qr-${String(app.state.selectedGuest.nome || 'convidado').replace(/\s+/g, '-').toLowerCase()}.png`;
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        app.setText('qr-feedback', 'Imagem do QR baixada com sucesso.');
+
+        // Try Cordova File API to save directly to Pictures/BeepWedding
+        const tryCordovaSave = () => new Promise((resolve, reject) => {
+            if (!window.cordova || !window.resolveLocalFileSystemURL || !window.cordova.file) {
+                reject(new Error('Cordova File API indisponivel'));
+                return;
+            }
+
+            const base = window.cordova.file.externalRootDirectory || window.cordova.file.dataDirectory;
+            if (!base) {
+                reject(new Error('Localizacao de arquivo externa indisponivel'));
+                return;
+            }
+
+            const dirPath = base + 'Pictures/BeepWedding/';
+
+            window.resolveLocalFileSystemURL(base, (root) => {
+                root.getDirectory('Pictures', { create: true }, (picturesDir) => {
+                    picturesDir.getDirectory('BeepWedding', { create: true }, (appDir) => {
+                        appDir.getFile(fileName, { create: true, exclusive: false }, (fileEntry) => {
+                            fileEntry.createWriter((fileWriter) => {
+                                const blob = (function dataURLtoBlob(dataurl) {
+                                    const arr = dataurl.split(',');
+                                    const mime = arr[0].match(/:(.*?);/)[1];
+                                    const bstr = atob(arr[1]);
+                                    let n = bstr.length;
+                                    const u8arr = new Uint8Array(n);
+                                    while (n--) {
+                                        u8arr[n] = bstr.charCodeAt(n);
+                                    }
+                                    return new Blob([u8arr], { type: mime });
+                                }(dataUrl));
+
+                                fileWriter.onwriteend = () => {
+                                    try {
+                                        if (window.cordova.plugins && window.cordova.plugins.MediaScanner && typeof window.cordova.plugins.MediaScanner.scanFile === 'function') {
+                                            window.cordova.plugins.MediaScanner.scanFile(fileEntry.nativeURL, () => {}, () => {});
+                                        }
+                                    } catch (_e) {}
+                                    resolve(fileEntry.nativeURL || fileEntry.fullPath || dirPath + fileName);
+                                };
+                                fileWriter.onerror = (err) => reject(err);
+                                fileWriter.write(blob);
+                            }, reject);
+                        }, reject);
+                    }, reject);
+                }, reject);
+            }, reject);
+        });
+
+        const tryShareFallback = () => new Promise((resolve, reject) => {
+            try {
+                if (window.cordova && window.cordova.plugins && window.cordova.plugins.socialsharing && typeof window.cordova.plugins.socialsharing.shareWithOptions === 'function') {
+                    window.cordova.plugins.socialsharing.shareWithOptions({
+                        files: [dataUrl],
+                        subject: fileName
+                    }, () => resolve('shared'), () => reject(new Error('share-failed')));
+                    return;
+                }
+
+                if (navigator.share) {
+                    navigator.share({ files: [], title: 'QR Code', text: app.state.selectedGuest.nome }).then(() => resolve('shared')).catch(reject);
+                    return;
+                }
+
+                reject(new Error('No share available'));
+            } catch (e) {
+                reject(e);
+            }
+        });
+
+        tryCordovaSave()
+            .then((path) => {
+                app.showToast('QR salvo na galeria: ' + (path || ''), 'success');
+            })
+            .catch(() => {
+                // fallback to share or download
+                tryShareFallback()
+                    .then(() => app.showToast('Compartilhamento iniciado. Escolha "Salvar imagem".', 'success'))
+                    .catch(() => {
+                        // final fallback: force download via anchor
+                        const link = document.createElement('a');
+                        link.href = dataUrl;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        app.showToast('Imagem pronta para download.', 'success');
+                    });
+            });
     };
 
     app.handleShareQr = async function handleShareQr() {

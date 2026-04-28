@@ -29,6 +29,14 @@
             app.clearScanResult();
         }
 
+        if (typeof app.closeQrModal === 'function') {
+            try {
+                app.closeQrModal();
+            } catch (_e) {
+                // ignore
+            }
+        }
+
         const validScreens = ['dashboard', 'convidados', 'checkin'];
         const targetScreen = validScreens.includes(screenName) ? screenName : 'dashboard';
 

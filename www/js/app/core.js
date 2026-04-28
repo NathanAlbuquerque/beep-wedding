@@ -110,6 +110,38 @@
         app.setText('metric-present', summary.present ?? 0);
         app.setText('metric-absent', summary.absent ?? 0);
         app.setText('last-sync', `Atualizado as ${new Date().toLocaleTimeString('pt-BR')}`);
+        if (typeof app.refreshHistory === 'function') {
+            try {
+                await app.refreshHistory();
+            } catch (_e) {
+                // ignore
+            }
+        }
+    };
+
+    app.refreshHistory = async function refreshHistory() {
+        const container = document.getElementById('history-list');
+        if (!container || !windowObject.BeepWeddingDatabase) {
+            return;
+        }
+
+        const guests = await windowObject.BeepWeddingDatabase.listGuests(500);
+        const records = (guests || [])
+            .map((g) => ({ nome: g.nome || '', status: g.status || '', time: g.data_checkin || g.data_saida || '' }))
+            .filter((r) => r.time)
+            .sort((a, b) => (new Date(b.time)).getTime() - (new Date(a.time)).getTime())
+            .slice(0, 50);
+
+        if (records.length === 0) {
+            container.innerHTML = '<div class="guest-block-empty">Nenhum registro recente.</div>';
+            return;
+        }
+
+        container.innerHTML = records.map((r) => {
+            const t = new Date(r.time);
+            const time = isNaN(t.getTime()) ? String(r.time) : t.toLocaleString('pt-BR');
+            return `<article class="guest-block-item"><div class="guest-block-main"><div class="guest-block-field"><strong class="guest-block-value guest-block-value-name">${app.escapeHtml(r.nome)}</strong></div><div class="guest-block-field"><span class="guest-block-value guest-block-value-status"><span class="status-badge ${app.mapStatusClass(r.status)}">${app.escapeHtml(r.status)}</span></span></div></div><div class="guest-block-meta"><small>${time}</small></div></article>`;
+        }).join('');
     };
 
     app.startSummaryAutoRefresh = function startSummaryAutoRefresh() {
