@@ -396,6 +396,10 @@ button {
     margin-bottom: 16px;
 }
 
+.guest-create-heading {
+    align-items: center;
+}
+
 .guest-list-panel .panel-heading > div:first-child {
     display: grid;
     gap: 10px;
@@ -437,11 +441,13 @@ button {
     display: grid;
     gap: 10px;
     min-width: 220px;
+    max-width: calc(100vw - 24px);
     padding: 12px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.96);
     border: 1px solid rgba(18, 52, 37, 0.12);
     box-shadow: 0 18px 44px rgba(31, 93, 65, 0.14);
+    transform-origin: top right;
 }
 
 .guest-tools-menu .action-button {
@@ -671,6 +677,18 @@ button {
     border: 1px solid rgba(58, 34, 20, 0.1);
     background: rgba(255, 255, 255, 0.72);
     animation: block-fade-in 220ms var(--transition-medium) both;
+}
+
+.guest-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.table-action-secondary {
+    min-width: 48px;
+    justify-content: center;
+    padding-inline: 14px;
 }
 
 .table-action {
@@ -1206,15 +1224,19 @@ button {
         flex-direction: column;
     }
 
+    .guest-create-heading {
+        flex-direction: row;
+    }
+
     .guest-actions {
         width: 100%;
         justify-content: flex-start;
     }
 
     .guest-tools-menu {
-        right: auto;
-        left: 0;
         min-width: min(92vw, 280px);
+        right: 0;
+        left: auto;
     }
 }
 

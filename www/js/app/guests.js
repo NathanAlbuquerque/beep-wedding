@@ -63,13 +63,18 @@
                     return;
                 }
 
-                const actionButton = target.closest('[data-qr-hash]');
-                if (!actionButton) {
+                const qrButton = target.closest('[data-qr-hash]');
+                if (qrButton) {
+                    const hash = qrButton.getAttribute('data-qr-hash');
+                    app.selectGuestForQr(hash);
                     return;
                 }
 
-                const hash = actionButton.getAttribute('data-qr-hash');
-                app.selectGuestForQr(hash);
+                const validationButton = target.closest('[data-validate-hash]');
+                if (validationButton) {
+                    const hash = validationButton.getAttribute('data-validate-hash');
+                    app.openGuestValidationByHash(hash);
+                }
             });
         }
 
@@ -167,17 +172,11 @@
         try {
             const rows = await app.readGuestFile(file);
             const guestsToInsert = rows
-                .map((row) => String(row || '').trim())
-                .filter((nome) => Boolean(nome))
-                .map((nome) => ({
-                    nome,
-                    hash: app.generateGuestHash(),
-                    status: 'Ausente',
-                    data_checkin: null
-                }));
+                .map((row) => app.normalizeImportedGuestRow(row))
+                .filter((guest) => Boolean(guest.nome));
 
             if (guestsToInsert.length === 0) {
-                app.setText('import-feedback', 'Nenhum nome valido foi encontrado no arquivo.');
+                app.setText('import-feedback', 'Nenhum convidado valido foi encontrado no arquivo.');
                 return;
             }
 
@@ -234,21 +233,82 @@
         });
     };
 
-    app.parseCsvRows = function parseCsvRows(text) {
-        const lines = text.replace(/\r/g, '\n').split('\n').filter((line) => line.trim().length > 0);
-        if (lines.length === 0) {
+    app.normalizeImportHeader = function normalizeImportHeader(value) {
+        return String(value || '')
+            .trim()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '');
+    };
+
+    app.getImportFieldValue = function getImportFieldValue(row, aliases) {
+        const source = row && typeof row === 'object' ? row : {};
+        const normalizedAliases = (aliases || []).map((alias) => app.normalizeImportHeader(alias));
+
+        return Object.keys(source).reduce((value, key) => {
+            if (value !== '') {
+                return value;
+            }
+
+            const normalizedKey = app.normalizeImportHeader(key);
+            if (normalizedAliases.includes(normalizedKey)) {
+                return source[key];
+            }
+
+            return '';
+        }, '');
+    };
+
+    app.normalizeImportedGuestRow = function normalizeImportedGuestRow(row) {
+        const source = row && typeof row === 'object' ? row : { nome: row };
+        const nome = String(app.getImportFieldValue(source, ['nome', 'name', 'convidado']) || '').trim();
+        const hash = String(app.getImportFieldValue(source, ['hash', 'codigo', 'code', 'token']) || '').trim();
+        const status = String(app.getImportFieldValue(source, ['status', 'situacao']) || '').trim() || 'Ausente';
+        const dataCheckin = String(app.getImportFieldValue(source, ['datacheckin', 'datacheckin', 'checkin', 'datadecheckin', 'datadeentrada']) || '').trim() || null;
+
+        return {
+            nome,
+            hash: hash || app.generateGuestHash(),
+            status,
+            data_checkin: dataCheckin
+        };
+    };
+
+    app.parseGuestSheetRows = function parseGuestSheetRows(rows) {
+        const matrix = Array.isArray(rows) ? rows : [];
+        const normalizedRows = matrix
+            .map((row) => (Array.isArray(row) ? row : [row]))
+            .map((row) => row.map((value) => String(value || '').trim()))
+            .filter((row) => row.some((value) => Boolean(String(value || '').trim())));
+
+        if (normalizedRows.length === 0) {
             return [];
         }
 
-        const headerRow = app.splitCsvLine(lines[0]).map((column) => column.toLowerCase().trim());
-        const nameColumnIndex = headerRow.findIndex((column) => ['nome', 'name', 'convidado'].includes(column));
-        const hasHeader = nameColumnIndex >= 0;
-        const dataStartIndex = hasHeader ? 1 : 0;
-        const fallbackIndex = hasHeader ? nameColumnIndex : 0;
+        const recognizedHeaderAliases = ['nome', 'name', 'convidado', 'hash', 'codigo', 'code', 'token', 'status', 'situacao', 'datacheckin', 'datacheckin', 'checkin', 'datadecheckin', 'datadeentrada'];
+        const headerRow = normalizedRows[0];
+        const hasHeader = headerRow.some((column) => recognizedHeaderAliases.includes(app.normalizeImportHeader(column)));
 
-        return lines.slice(dataStartIndex)
-            .map((line) => app.splitCsvLine(line)[fallbackIndex] || '')
-            .map((value) => String(value).trim());
+        if (!hasHeader) {
+            return normalizedRows.map((row) => ({
+                nome: row[0] || ''
+            }));
+        }
+
+        return normalizedRows.slice(1).map((row) => {
+            const record = {};
+            headerRow.forEach((header, index) => {
+                const key = app.normalizeImportHeader(header) || `col_${index + 1}`;
+                record[key] = row[index] || '';
+            });
+            return record;
+        });
+    };
+
+    app.parseCsvRows = function parseCsvRows(text) {
+        const lines = text.replace(/\r/g, '\n').split('\n').filter((line) => line.trim().length > 0);
+        return app.parseGuestSheetRows(lines.map((line) => app.splitCsvLine(line)));
     };
 
     app.splitCsvLine = function splitCsvLine(line) {
@@ -296,19 +356,7 @@
 
         const firstSheet = workbook.Sheets[firstSheetName];
         const rows = windowObject.XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
-        if (!Array.isArray(rows) || rows.length === 0) {
-            return [];
-        }
-
-        const header = (rows[0] || []).map((column) => String(column).toLowerCase().trim());
-        const nameColumnIndex = header.findIndex((column) => ['nome', 'name', 'convidado'].includes(column));
-        const hasHeader = nameColumnIndex >= 0;
-        const dataRows = hasHeader ? rows.slice(1) : rows;
-        const columnIndex = hasHeader ? nameColumnIndex : 0;
-
-        return dataRows
-            .map((row) => (Array.isArray(row) ? row[columnIndex] : ''))
-            .map((value) => String(value || '').trim());
+        return app.parseGuestSheetRows(rows);
     };
 
     app.refreshGuestList = async function refreshGuestList() {
@@ -345,7 +393,14 @@
                                 <span class="guest-block-value guest-block-value-status"><span class="status-badge ${app.mapStatusClass(status)}">${app.escapeHtml(status)}</span></span>
                             </div>
                         </div>
-                        <button class="table-action" type="button" data-qr-hash="${app.escapeHtml(guest.hash || '')}"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM16 16h2v2h-2zM16 20h2v2h-2zM20 16h2v2h-2zM20 20h2v2h-2z"></path></svg></span><span>Abrir QR</span></button>
+                        <div class="guest-row-actions">
+                            <button class="table-action table-action-secondary" type="button" data-validate-hash="${app.escapeHtml(guest.hash || '')}" aria-label="Validar por nome">
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M10 18a8 8 0 1 1 5.2-14.1A8 8 0 0 1 10 18zm7-1 4 4"></path></svg>
+                                </span>
+                            </button>
+                            <button class="table-action" type="button" data-qr-hash="${app.escapeHtml(guest.hash || '')}"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM16 16h2v2h-2zM16 20h2v2h-2zM20 16h2v2h-2zM20 20h2v2h-2z"></path></svg></span><span>Abrir QR</span></button>
+                        </div>
                     </article>
                 `;
             })
@@ -362,6 +417,34 @@
         Promise.resolve(app.renderGuestQr(selected)).catch(() => {
             app.showToast('Nao foi possivel montar a imagem do QR.', 'error');
         });
+    };
+
+    app.openGuestValidationByHash = function openGuestValidationByHash(hash) {
+        const selected = app.state.currentGuests.find((guest) => String(guest.hash) === String(hash));
+        if (!selected) {
+            app.showToast('Convidado nao encontrado para validacao.', 'error');
+            return;
+        }
+
+        if (typeof app.navigateToScreen === 'function') {
+            app.navigateToScreen('checkin', true);
+        }
+
+        const passwordInput = document.getElementById('guest-password');
+        if (passwordInput) {
+            passwordInput.value = String(selected.hash || '').toUpperCase();
+        }
+
+        if (typeof app.clearScanResult === 'function') {
+            app.clearScanResult();
+        }
+
+        app.state.selectedGuest = selected;
+        if (typeof app.renderScanSuccess === 'function') {
+            app.renderScanSuccess(selected);
+        }
+
+        app.showToast(`Convidado ${selected.nome} carregado para validacao.`, 'success');
     };
 
     app.isGuestHashValid = function isGuestHashValid(hash) {
@@ -745,8 +828,9 @@
     };
 
     app.buildGuestsCsv = function buildGuestsCsv(guests) {
-        const header = ['Nome', 'Hash', 'Status', 'Data de Check-in'];
+        const header = ['ID', 'Nome', 'Hash', 'Status', 'Data de Check-in'];
         const rows = guests.map((guest) => [
+            String(guest.id || ''),
             String(guest.nome || '').replace(/"/g, '""'),
             String(guest.hash || ''),
             String(guest.status || 'Ausente'),
@@ -755,7 +839,7 @@
 
         const allRows = [header, ...rows];
         return allRows
-            .map((row) => row.map((cell) => `"${cell}"`).join(','))
+            .map((row) => row.map((cell) => `"${String(cell || '').replace(/"/g, '""')}"`).join(','))
             .join('\n');
     };
 
