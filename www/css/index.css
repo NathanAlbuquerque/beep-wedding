@@ -827,6 +827,37 @@ button {
     margin-bottom: 8px;
 }
 
+.checkin-password-box {
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(18, 52, 37, 0.12);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.checkin-password-title {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.checkin-password-hint {
+    margin: 6px 0 0;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.checkin-password-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.checkin-password-input {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
 .scan-result-card {
     margin-top: 12px;
     padding: 16px;
@@ -1293,6 +1324,10 @@ button {
     .qr-actions .action-button {
         width: 100%;
         min-width: 0;
+    }
+
+    .checkin-password-row {
+        grid-template-columns: 1fr;
     }
 
     .guest-tools-trigger {

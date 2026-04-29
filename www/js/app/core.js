@@ -16,6 +16,10 @@
         eventName: String(configuredEventName || '').trim() || 'Casamento Denyse & Nathan'
     };
 
+    app.normalizeGuestPassword = function normalizeGuestPassword(value) {
+        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').trim();
+    };
+
     app.setText = function setText(elementId, value) {
         const element = document.getElementById(elementId);
         if (element) {
@@ -62,13 +66,11 @@
     };
 
     app.generateGuestHash = function generateGuestHash() {
-        if (windowObject.crypto && typeof windowObject.crypto.randomUUID === 'function') {
-            return windowObject.crypto.randomUUID();
-        }
+        const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const digits = '23456789';
+        const pick = (characters) => characters.charAt(Math.floor(Math.random() * characters.length));
 
-        const random = Math.random().toString(16).slice(2);
-        const now = Date.now().toString(16);
-        return `${now}-${random}`;
+        return `${pick(letters)}${pick(digits)}${pick(letters)}${pick(digits)}`;
     };
 
     app.mapStatusClass = function mapStatusClass(status) {

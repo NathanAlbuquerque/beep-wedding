@@ -5,6 +5,7 @@
         const scanButton = document.getElementById('scan-qr-button');
         const cancelScanButton = document.getElementById('cancel-scan-button');
         const scannerOverlayClose = document.getElementById('scanner-overlay-close');
+        const guestPasswordForm = document.getElementById('guest-password-form');
         const confirmPresenceButton = document.getElementById('confirm-presence-button');
         const guestExitButton = document.getElementById('guest-exit-button');
 
@@ -18,6 +19,10 @@
 
         if (scannerOverlayClose) {
             scannerOverlayClose.addEventListener('click', app.requestScanCancel);
+        }
+
+        if (guestPasswordForm) {
+            guestPasswordForm.addEventListener('submit', app.handlePasswordValidation);
         }
 
         if (confirmPresenceButton) {
@@ -82,6 +87,37 @@
             app.showToast(message, 'error');
         } finally {
             app.setScannerUiActive(false);
+        }
+    };
+
+    app.handlePasswordValidation = async function handlePasswordValidation(event) {
+        event.preventDefault();
+
+        const input = document.getElementById('guest-password');
+        const password = app.normalizeGuestPassword(input ? input.value : '');
+
+        if (!password) {
+            app.showToast('Digite a senha do convidado.', 'error');
+            return;
+        }
+
+        if (input) {
+            input.value = password;
+        }
+
+        try {
+            const guest = await app.validateGuestByHash(password);
+            if (!guest) {
+                app.showToast('Senha nao encontrada na base.', 'error');
+                app.renderScanError();
+                return;
+            }
+
+            app.state.selectedGuest = guest;
+            app.renderScanSuccess(guest);
+            app.showToast('Senha validada com sucesso.', 'success');
+        } catch (_error) {
+            app.showToast('Nao foi possivel validar a senha.', 'error');
         }
     };
 
@@ -375,7 +411,7 @@
                 const parsed = JSON.parse(raw);
                 const jsonHash = parsed.hash || parsed.codigo || parsed.code || parsed.token;
                 if (jsonHash) {
-                    return String(jsonHash).trim();
+                    return app.normalizeGuestPassword(jsonHash);
                 }
             } catch (_error) {
                 // Ignore invalid JSON and keep parsing as plain string.
@@ -389,19 +425,19 @@
                 || parsedUrl.searchParams.get('code')
                 || parsedUrl.searchParams.get('token');
             if (queryHash) {
-                return String(queryHash).trim();
+                return app.normalizeGuestPassword(queryHash);
             }
 
             if (parsedUrl.hash) {
                 const fragment = parsedUrl.hash.replace(/^#/, '').trim();
                 if (fragment) {
-                    return fragment;
+                    return app.normalizeGuestPassword(fragment);
                 }
             }
 
             const pathSegments = parsedUrl.pathname.split('/').filter(Boolean);
             if (pathSegments.length > 0) {
-                return String(pathSegments[pathSegments.length - 1]).trim();
+                return app.normalizeGuestPassword(pathSegments[pathSegments.length - 1]);
             }
         } catch (_error) {
             // Not a URL, return original value.
@@ -409,10 +445,10 @@
 
         const uuidMatch = raw.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
         if (uuidMatch) {
-            return String(uuidMatch[0]).trim();
+            return app.normalizeGuestPassword(uuidMatch[0]);
         }
 
-        return raw;
+        return app.normalizeGuestPassword(raw);
     };
 
     app.validateGuestByHash = async function validateGuestByHash(hash) {

@@ -359,16 +359,18 @@
             return;
         }
 
-        app.renderGuestQr(selected);
+        Promise.resolve(app.renderGuestQr(selected)).catch(() => {
+            app.showToast('Nao foi possivel montar a imagem do QR.', 'error');
+        });
     };
 
     app.isGuestHashValid = function isGuestHashValid(hash) {
-        const normalized = String(hash || '').trim();
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized);
+        const normalized = app.normalizeGuestPassword(hash);
+        return /^[A-Z][0-9][A-Z][0-9]$/.test(normalized);
     };
 
     app.buildQrPayload = function buildQrPayload(hash) {
-        const normalized = String(hash || '').trim();
+        const normalized = app.normalizeGuestPassword(hash);
         if (!app.isGuestHashValid(normalized)) {
             throw new Error('Hash invalido para gerar QR Code.');
         }
@@ -396,7 +398,7 @@
         return false;
     };
 
-    app.renderGuestQr = function renderGuestQr(guest) {
+    app.renderGuestQr = async function renderGuestQr(guest) {
         app.state.selectedGuest = guest;
 
         const qrModal = document.getElementById('qr-modal');
@@ -433,6 +435,8 @@
             return;
         }
 
+        await app.composeQrPreviewWithPassword(qrContainer, payload);
+
         app.state.selectedGuestQrPayload = payload;
 
         if (qrTitle) {
@@ -453,6 +457,55 @@
         }
 
         app.showToast('QR Code gerado com sucesso.', 'success');
+    };
+
+    app.composeQrPreviewWithPassword = async function composeQrPreviewWithPassword(container, password) {
+        const sourceCanvas = container.querySelector('canvas');
+        const sourceImage = container.querySelector('img');
+
+        if (!sourceCanvas && !sourceImage) {
+            throw new Error('QR Code indisponivel para composicao.');
+        }
+
+        if (sourceImage && !sourceImage.complete) {
+            await new Promise((resolve, reject) => {
+                sourceImage.onload = () => resolve();
+                sourceImage.onerror = reject;
+            });
+        }
+
+        const canvas = document.createElement('canvas');
+        const width = 360;
+        const qrSize = 300;
+        const height = 410;
+        const qrLeft = Math.round((width - qrSize) / 2);
+        const qrTop = 18;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+            throw new Error('Canvas indisponivel.');
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+
+        const qrSource = sourceCanvas || sourceImage;
+        ctx.drawImage(qrSource, qrLeft, qrTop, qrSize, qrSize);
+
+        ctx.fillStyle = '#13231b';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '700 18px Arial, sans-serif';
+        ctx.fillText('SENHA', width / 2, qrTop + qrSize + 28);
+        ctx.font = '800 30px Arial, sans-serif';
+        ctx.fillText(app.normalizeGuestPassword(password), width / 2, qrTop + qrSize + 68);
+
+        container.innerHTML = '';
+        container.appendChild(canvas);
+        return canvas;
     };
 
     app.closeQrModal = function closeQrModal() {

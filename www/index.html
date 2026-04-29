@@ -156,6 +156,22 @@
                         </button>
                     </div>
 
+                    <form id="guest-password-form" class="checkin-password-box stack-form">
+                        <div>
+                            <h3 class="checkin-password-title">Validar com senha</h3>
+                            <p class="checkin-password-hint">Use o código de 4 caracteres do convidado quando ele não tiver o QR Code.</p>
+                        </div>
+                        <div class="checkin-password-row">
+                            <input id="guest-password" class="field-input checkin-password-input" type="text" placeholder="Ex.: A1B2" inputmode="text" autocapitalize="characters" autocomplete="off">
+                            <button id="validate-password-button" class="action-button action-button-primary" type="submit">
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M20 7 10 17l-5-5"></path></svg>
+                                </span>
+                                <span>Validar senha</span>
+                            </button>
+                        </div>
+                    </form>
+
                     <article id="scan-result-card" class="scan-result-card" aria-hidden="true">
                         <h3 id="scan-result-title">Convidado encontrado</h3>
                         <dl class="scan-result-list">
