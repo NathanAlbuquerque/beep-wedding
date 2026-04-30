@@ -18,7 +18,7 @@
     <preference name="AndroidWindowSplashScreenBackground" value="#EEF7F1" />
     <hook type="after_prepare" src="hooks/after_prepare/patch-qrscanner-gradle.js" />
     <hook type="before_compile" src="hooks/after_prepare/patch-qrscanner-gradle.js" />
-    <icon src="www/img/beep-wedding-logo.svg" />
+    <icon src="www/img/icon-beep-wedding.svg" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 
