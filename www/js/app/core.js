@@ -205,6 +205,146 @@
         }
     };
 
+    app.getInitialImportMarkerKey = function getInitialImportMarkerKey() {
+        return 'beepWeddingInitialGuestsImported';
+    };
+
+    app.autoImportInitialGuests = async function autoImportInitialGuests() {
+        const markerKey = app.getInitialImportMarkerKey();
+        const alreadyImported = windowObject.localStorage.getItem(markerKey);
+        
+        if (alreadyImported) {
+            return;
+        }
+
+        try {
+            if (!windowObject.XLSX || typeof windowObject.XLSX.read !== 'function') {
+                console.warn('XLSX library not available for auto-import');
+                return;
+            }
+
+            if (!windowObject.fetch) {
+                console.warn('Fetch API not available for auto-import');
+                return;
+            }
+
+            const response = await windowObject.fetch('assets/lista-convidados.xlsx');
+            if (!response.ok) {
+                console.warn('Could not fetch initial guest list');
+                return;
+            }
+
+            const buffer = await response.arrayBuffer();
+            const workbook = windowObject.XLSX.read(buffer, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            
+            if (!firstSheetName) {
+                console.warn('No sheets found in initial guest list');
+                return;
+            }
+
+            const firstSheet = workbook.Sheets[firstSheetName];
+            const rows = windowObject.XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
+            
+            if (!Array.isArray(rows) || rows.length === 0) {
+                console.warn('No rows found in initial guest list');
+                return;
+            }
+
+            const guestsToImport = [];
+            const normalizeHeader = (value) => String(value || '')
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '');
+
+            const getFieldValue = (row, aliases) => {
+                const source = row && typeof row === 'object' ? row : {};
+                const normalizedAliases = (aliases || []).map((alias) => normalizeHeader(alias));
+                return Object.keys(source).reduce((value, key) => {
+                    if (value !== '') return value;
+                    const normalizedKey = normalizeHeader(key);
+                    if (normalizedAliases.includes(normalizedKey)) return source[key];
+                    return '';
+                }, '');
+            };
+
+            const normalizeData = (row) => {
+                const source = row && typeof row === 'object' ? row : { nome: row };
+                const nome = String(getFieldValue(source, ['nome', 'name', 'convidado']) || '').trim();
+                const hash = String(getFieldValue(source, ['hash', 'codigo', 'code', 'token']) || '').trim();
+                const status = String(getFieldValue(source, ['status', 'situacao']) || '').trim() || 'Ausente';
+                const dataCheckin = String(getFieldValue(source, ['datacheckin', 'datacheckin', 'checkin', 'datadecheckin', 'datadeentrada']) || '').trim() || null;
+
+                if (!nome) return null;
+
+                return {
+                    nome,
+                    hash: hash || (typeof app.generateGuestHash === 'function' ? app.generateGuestHash() : ''),
+                    status,
+                    data_checkin: dataCheckin
+                };
+            };
+
+            const sheetRows = rows
+                .map((row) => (Array.isArray(row) ? row : [row]))
+                .map((row) => row.map((value) => String(value || '').trim()))
+                .filter((row) => row.some((value) => Boolean(String(value || '').trim())));
+
+            if (sheetRows.length === 0) {
+                console.warn('No valid rows found in initial guest list');
+                return;
+            }
+
+            const recognizedHeaders = ['nome', 'name', 'convidado', 'hash', 'codigo', 'code', 'token', 'status', 'situacao', 'datacheckin', 'datacheckin', 'checkin', 'datadecheckin', 'datadeentrada'];
+            const headerRow = sheetRows[0];
+            const hasHeader = headerRow.some((column) => recognizedHeaders.includes(normalizeHeader(column)));
+
+            let dataRows = sheetRows;
+            if (hasHeader) {
+                dataRows = sheetRows.slice(1);
+                sheetRows[0].forEach((header, index) => {
+                    const normalized = normalizeData({});
+                    if (!normalized) return;
+                    const key = normalizeHeader(header);
+                    if (key) {
+                        // Header is recognized
+                    }
+                });
+            }
+
+            dataRows.forEach((row) => {
+                const record = {};
+                if (hasHeader) {
+                    headerRow.forEach((header, index) => {
+                        const key = normalizeHeader(header) || `col_${index + 1}`;
+                        record[key] = row[index] || '';
+                    });
+                } else {
+                    record.nome = row[0] || '';
+                }
+                const guest = normalizeData(record);
+                if (guest) {
+                    guestsToImport.push(guest);
+                }
+            });
+
+            if (guestsToImport.length === 0) {
+                console.warn('No valid guests to import from initial list');
+                return;
+            }
+
+            if (windowObject.BeepWeddingDatabase && typeof windowObject.BeepWeddingDatabase.bulkInsertGuests === 'function') {
+                await windowObject.BeepWeddingDatabase.bulkInsertGuests(guestsToImport);
+                windowObject.localStorage.setItem(markerKey, 'true');
+                console.log(`Auto-imported ${guestsToImport.length} initial guests`);
+            }
+        } catch (error) {
+            console.warn('Auto-import of initial guests failed:', error);
+        }
+    };
+
     app.initializeBaseState = async function initializeBaseState() {
         app.setStatus('Preparando armazenamento local...');
         app.applyEventTitle();
@@ -213,6 +353,9 @@
         if (windowObject.BeepWeddingDatabase) {
             await windowObject.BeepWeddingDatabase.initialize();
         }
+
+        // Auto-import initial guests if not already done
+        await app.autoImportInitialGuests();
 
         if (typeof app.setupNavigation === 'function') {
             app.setupNavigation();

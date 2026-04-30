@@ -545,6 +545,7 @@
     app.composeQrPreviewWithPassword = async function composeQrPreviewWithPassword(container, password) {
         const sourceCanvas = container.querySelector('canvas');
         const sourceImage = container.querySelector('img');
+        const guestName = app.state.selectedGuest ? String(app.state.selectedGuest.nome || 'Convidado') : 'Convidado';
 
         if (!sourceCanvas && !sourceImage) {
             throw new Error('QR Code indisponivel para composicao.');
@@ -560,9 +561,12 @@
         const canvas = document.createElement('canvas');
         const width = 360;
         const qrSize = 300;
-        const height = 410;
+        const titleFontSize = 16;
+        const titlePadding = 12;
+        const titleHeight = titleFontSize + 2 * titlePadding;
+        const qrTop = titleHeight + 8;
+        const height = qrTop + qrSize + 90;
         const qrLeft = Math.round((width - qrSize) / 2);
-        const qrTop = 18;
         const ctx = canvas.getContext('2d');
 
         if (!ctx) {
@@ -575,6 +579,12 @@
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
 
+        ctx.fillStyle = '#13231b';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.font = `700 ${titleFontSize}px Arial, sans-serif`;
+        ctx.fillText(app.escapeHtml(guestName), width / 2, titlePadding, width - 20);
+
         const qrSource = sourceCanvas || sourceImage;
         ctx.drawImage(qrSource, qrLeft, qrTop, qrSize, qrSize);
 
@@ -582,9 +592,9 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.font = '700 18px Arial, sans-serif';
-        ctx.fillText('SENHA', width / 2, qrTop + qrSize + 28);
+        ctx.fillText('SENHA', width / 2, qrTop + qrSize + 32);
         ctx.font = '800 30px Arial, sans-serif';
-        ctx.fillText(app.normalizeGuestPassword(password), width / 2, qrTop + qrSize + 68);
+        ctx.fillText(app.normalizeGuestPassword(password), width / 2, qrTop + qrSize + 70);
 
         container.innerHTML = '';
         container.appendChild(canvas);
@@ -811,6 +821,88 @@
             const csv = app.buildGuestsCsv(allGuests);
             const fileName = `beep-wedding-convidados-${new Date().toISOString().split('T')[0]}.csv`;
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+            const tryCordovaSave = () => new Promise((resolve, reject) => {
+                if (!windowObject.cordova || !windowObject.resolveLocalFileSystemURL || !windowObject.cordova.file) {
+                    reject(new Error('Cordova File API indisponivel'));
+                    return;
+                }
+
+                const baseCandidates = [
+                    windowObject.cordova.file.externalRootDirectory,
+                    windowObject.cordova.file.externalDataDirectory,
+                    windowObject.cordova.file.dataDirectory
+                ].filter((value) => Boolean(value));
+
+                if (baseCandidates.length === 0) {
+                    reject(new Error('Nenhum diretorio de arquivo disponivel'));
+                    return;
+                }
+
+                const folderChain = ['Download', 'BeepWedding'];
+
+                const ensureDirectories = (parent, index, done, failed) => {
+                    if (index >= folderChain.length) {
+                        done(parent);
+                        return;
+                    }
+
+                    parent.getDirectory(
+                        folderChain[index],
+                        { create: true },
+                        (nextDirectory) => ensureDirectories(nextDirectory, index + 1, done, failed),
+                        failed
+                    );
+                };
+
+                const tryBaseAt = (baseIndex) => {
+                    if (baseIndex >= baseCandidates.length) {
+                        reject(new Error('Falha ao salvar planilha no dispositivo'));
+                        return;
+                    }
+
+                    const basePath = baseCandidates[baseIndex];
+                    windowObject.resolveLocalFileSystemURL(
+                        basePath,
+                        (baseDirectory) => {
+                            ensureDirectories(
+                                baseDirectory,
+                                0,
+                                (targetDirectory) => {
+                                    targetDirectory.getFile(
+                                        fileName,
+                                        { create: true, exclusive: false },
+                                        (fileEntry) => {
+                                            fileEntry.createWriter(
+                                                (fileWriter) => {
+                                                    fileWriter.onwriteend = () => resolve(fileEntry.nativeURL || fileEntry.fullPath || `${basePath}${folderChain.join('/')}/${fileName}`);
+                                                    fileWriter.onerror = () => tryBaseAt(baseIndex + 1);
+                                                    fileWriter.write(blob);
+                                                },
+                                                () => tryBaseAt(baseIndex + 1)
+                                            );
+                                        },
+                                        () => tryBaseAt(baseIndex + 1)
+                                    );
+                                },
+                                () => tryBaseAt(baseIndex + 1)
+                            );
+                        },
+                        () => tryBaseAt(baseIndex + 1)
+                    );
+                };
+
+                tryBaseAt(0);
+            });
+
+            try {
+                const savedPath = await tryCordovaSave();
+                app.showToast(`${allGuests.length} convidados exportados em ${savedPath}.`, 'success');
+                return;
+            } catch (_saveError) {
+                // continue to browser fallback
+            }
+
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
 
@@ -820,8 +912,9 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
 
-            app.showToast(`${allGuests.length} convidados exportados com sucesso.`, 'success');
+            app.showToast(`${allGuests.length} convidados exportados. Verifique a pasta de downloads.`, 'success');
         } catch (_error) {
             app.showToast('Nao foi possivel exportar os convidados.', 'error');
         }
